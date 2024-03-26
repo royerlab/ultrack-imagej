@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.scijava</groupId>
+        <artifactId>pom-scijava</artifactId>
+        <version>34.1.0</version>
+        <relativePath />
+    </parent>
+
+    <groupId>org.czbiohub.royerlab</groupId>
+    <artifactId>ultrack-imagej</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <name>Ultrack ImageJ</name>
+    <description>Ultrack Plugin for ImageJ.</description>
+    <url>https://royerlab.github.io/ultrack/</url>
+    <inceptionYear>2010</inceptionYear>
+    <organization>
+        <name>RoyerLab</name>
+        <url>https://github.com/royerlab/</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>GNU General Public License v3+</name>
+            <url>https://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>ilan-theodoro</id>
+            <name>Ilan Theodoro</name>
+            <url>https://github.com/ilan-theodoro</url>
+            <roles>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>JoOkuma</id>
+            <name>Jordão Bragantini</name>
+            <url>https://github.com/JoOkuma</url>
+            <roles>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <name>JoOkuma</name>
+        </contributor>
+        <contributor>
+            <name>ilan-theodoro</name>
+        </contributor>
+    </contributors>
+
+    <mailingLists>
+        <mailingList>
+            <name>Jordão Bragantini</name>
+            <archive>jordao.bragantini@gmail.com</archive>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://github.com/royerlab/ultrack-imagej</connection>
+        <developerConnection>scm:git:git@github.com:royerlab/ultrack-imagej</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/royerlab/ultrack-imagej</url>
+    </scm>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/royerlab/ultrack-imagej/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/royerlab/ultrack-imagej</url>
+    </ciManagement>
+
+    <properties>
+        <package-name>fiji.plugin.ultrack</package-name>
+        <license.licenseName>gpl_v3</license.licenseName>
+        <license.copyrightOwners>RoyerLab.</license.copyrightOwners>
+        <license.projectName>Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.</license.projectName>
+
+        <!-- NB: Deploy releases to the SciJava Maven repository. -->
+        <releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+
+        <!-- NB: Use ImgLib2 style code formatting (https://github.com/scijava/scijava-coding-style) -->
+        <scijava.coding-style>imglib2</scijava.coding-style>
+
+        <fontchooser.version>2.5.2</fontchooser.version>
+        <javaGeom.version>0.11.1</javaGeom.version>
+        <imglib2.version>6.1.0</imglib2.version>
+
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>TrackMate</artifactId>
+        </dependency>
+        <!-- Fiji dependencies -->
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>fiji-lib</artifactId>
+        </dependency>
+
+        <!-- ImageJ dependencies -->
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>imagej-common</artifactId>
+        </dependency>
+
+        <!-- ImgLib2 dependencies -->
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2-algorithm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2-algorithm-gpl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2-ij</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2-realtransform</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.imglib2</groupId>
+            <artifactId>imglib2-roi</artifactId>
+        </dependency>
+
+        <!-- SciJava dependencies -->
+        <dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scijava</groupId>
+            <artifactId>scijava-listeners</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>net.revelc.code.formatter</groupId>-->
+<!--            <artifactId>jsdt-core</artifactId>-->
+<!--            <version>3.3.0</version>-->
+<!--        </dependency>-->
+    </dependencies>
+
+</project>

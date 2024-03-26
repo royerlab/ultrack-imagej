@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultrack</title>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="bootstrap-icons.min.css">
+    <link rel="stylesheet" href="jsoneditor.min.css" type="text/css">
+    <link rel="stylesheet" href="styles.css" type="text/css">
+</head>
+<body>
+
+<div class="loading-overlay" style="display: none"> <!-- Initially hidden -->
+    <div class="loading-content">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="loading-message text-gray mt-3">Loading, please wait...</div>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            Ultrack
+        </a>
+    </div>
+</nav>
+<div class="container mt-4">
+    <div class="container-fluid">
+        <h4>Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps</h4>
+        <div class="mx-auto">
+            <a href="https://github.com/royerlab/ultrack" target="_blank">
+                <i class="bi bi-github"></i>
+                GitHub
+            </a>
+            &nbsp;
+            <a href="https://arxiv.org/abs/2308.04526" target="_blank">
+                <i class="bi bi-file-earmark-pdf-fill"></i>
+                ArXiV Paper
+            </a>
+            &nbsp;
+            <a href="https://royerlab.github.io/ultrack/" target="_blank">
+                <i class="bi bi-book-fill"></i>
+                Documentation
+            </a>
+            <p>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="container-fluid">
+        <div>
+            <div class="d-grid">
+                <button type="button" class="btn btn-success btn-lg btn-block" id="startServer" onclick="startServerFn();">Start Ultrack Server</button>
+                <p></p>
+            </div>
+<!--            <div class="alert alert-primary" role="alert" id="server-alert" hidden>-->
+<!--                <h4 class="alert-heading">Server Status</h4>-->
+<!--                <div id="server-status">Server is starting...</div>-->
+<!--            </div>-->
+        </div>
+        <div id="jsoneditor-div" hidden>
+            <div class="d-grid">
+                <h5>Ultrack Configuration</h5>
+                <p>Configure the Ultrack parameters and run the tracking algorithm.</p>
+            </div>
+            <div class="d-grid"> <hr class="mt-1 mb-1"/></div>
+            <div class="d-grid text-right">
+                <div class="col-sm">
+                    <p></p>
+                    <h6>Select the desired Ultrack workflow</h6>
+                </div>
+                <div class="row">
+                    <div class="col-sm text-right">
+                        <div class="d-grid">
+                            <select class="form-select" aria-label="Default select example" id="select-options">
+                            </select>
+                        </div>
+
+                    </div>
+
+                </div>
+                <p></p>
+
+            </div>
+            <div class="d-grid">
+                <hr class="mt-1 mb-1"/>
+                <h6>Settings</h6>
+            </div>
+
+            <div class="d-grid">
+                <div id="jsoneditor" style="height: 200px"></div>
+            </div>
+            <div class="container mt-4 d-grid">
+                <div class="row">
+                    <div class="col px-1">
+                        <button type="button" class="btn btn-primary w-100 h-100" id="selectImages">Select Images</button>
+                    </div>
+                    <div class="col px-1">
+                        <button type="button" class="btn btn-outline-primary w-100 h-100" id="runButton" disabled>Run</button>
+                    </div>
+                    <div class="col px-1">
+                        <button type="button" class="btn btn-outline-primary w-100 h-100" id="viewButton" disabled>View tracks</button>
+                    </div>
+                </div>
+                <p></p>
+                <p></p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="bootstrap.bundle.min.js"></script>
+<script src="jsoneditor.min.js"></script>
+<script src="ultrack_server.js"></script>
+</body>
+</html>
