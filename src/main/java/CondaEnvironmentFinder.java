@@ -1,4 +1,3 @@
-import javafx.scene.control.Alert;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +16,7 @@ public class CondaEnvironmentFinder extends JFrame {
             String path = openDialogToFindUltrack();
             System.out.println("Selected conda environment: " + path);
         } catch (InterruptedException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Failed to find Ultrack");
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
+            JOptionPane.showMessageDialog(null, "Failed to find Ultrack: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     private final JTextField condaPathField;

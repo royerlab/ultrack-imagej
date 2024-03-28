@@ -2,8 +2,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import fiji.plugin.trackmate.LoadTrackMatePlugIn;
 import javafx.application.Platform;
-import javafx.scene.Cursor;
-import javafx.scene.control.Alert;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
@@ -13,6 +11,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
@@ -27,26 +26,21 @@ public class JavaConnector {
     private final String ultrackPath;
     private final Consumer<String> onLog;
     private final Consumer<String> onError;
-    private final Stage owner;
     private UltrackConnector ultrackConnector;
 
-    public JavaConnector(JSObject javascriptConnector, String ultrackPath, Consumer<String> onLog, Consumer<String> onError, Stage owner) {
+    public JavaConnector(JSObject javascriptConnector, String ultrackPath, Consumer<String> onLog, Consumer<String> onError) {
         this.javascriptConnector = javascriptConnector;
         this.ultrackPath = ultrackPath;
         this.onLog = onLog;
         this.onError = onError;
-        this.owner = owner;
     }
 
     @SuppressWarnings("unused")
     public void startUltrackServer() {
         System.out.println("Starting Ultrack Server");
-        owner.getScene().setCursor(Cursor.WAIT);
 
         ultrackConnector = new UltrackConnector(ultrackPath);
         ultrackConnector.startServer();
-
-        owner.getScene().setCursor(Cursor.DEFAULT);
 
         javascriptConnector.call("setPort", ultrackConnector.getPort());
         javascriptConnector.call("startServer", "Ultrack Server Started");
@@ -55,10 +49,8 @@ public class JavaConnector {
     @SuppressWarnings("unused")
     public void stopUltrackServer() {
         System.out.println("Stopping Ultrack Server");
-        owner.getScene().setCursor(Cursor.WAIT);
         ultrackConnector.stopServer();
         ultrackConnector = null;
-        owner.getScene().setCursor(Cursor.DEFAULT);
         javascriptConnector.call("successfullyStopped");
     }
 
@@ -71,14 +63,12 @@ public class JavaConnector {
         newStage.setTitle("Image Selector");
 
         newStage.initModality(Modality.APPLICATION_MODAL);
-        newStage.initOwner(owner);
         System.out.println("Requesting images: ");
         for (String image : imageList) {
             System.out.println(image);
         }
 
         ImageSelector imageSelector = new ImageSelector(imageList);
-        imageSelector.start(newStage);
         ArrayList<String[]> selectedImages = imageSelector.getSelectedImages();
         javascriptConnector.call("updateSelectedImages", gson.toJson(selectedImages));
     }
@@ -97,7 +87,6 @@ public class JavaConnector {
             Document document = saxBuilder.build(stream);
 
             ImageSelector imageSelector = new ImageSelector(new String[]{"Image to visualize the tracks overlay"});
-            imageSelector.start(new Stage());
             ArrayList<String[]> selectedImages = imageSelector.getSelectedImages();
             File path = new File(selectedImages.get(0)[1]);
 
@@ -118,11 +107,7 @@ public class JavaConnector {
             LoadTrackMatePlugIn loadTrackMatePlugIn = new LoadTrackMatePlugIn();
             loadTrackMatePlugIn.run(tempFile);
         } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Error loading the tracks");
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
+            JOptionPane.showMessageDialog(null, "Error loading the tracks: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -139,7 +124,7 @@ public class JavaConnector {
             Platform.runLater(() -> javascriptConnector.call("updateJson", response));
 
             if (jsonObject.get("status").getAsString().equals("success")) {
-                Platform.runLater( () -> javascriptConnector.call("finishTracking", ""));
+                Platform.runLater(() -> javascriptConnector.call("finishTracking", ""));
 
             }
         });

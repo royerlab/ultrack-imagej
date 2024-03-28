@@ -1,6 +1,4 @@
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.URI;
@@ -35,7 +33,7 @@ public class UltrackConnector {
         System.out.println(randomPort);
         port = randomPort;
 
-        Platform.runLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             try {
                 ProcessBuilder processBuilder = new ProcessBuilder();
                 // Example command that lists directory content. For Windows, you might use "cmd", "/c", "dir".
@@ -98,11 +96,7 @@ public class UltrackConnector {
             System.out.println(message);
             c.send(message);
         } catch (InterruptedException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Error connecting to the websocket");
-            alert.setContentText(e.getMessage());
-            alert.showAndWait();
+            JOptionPane.showMessageDialog(null, "Error connecting to the websocket: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

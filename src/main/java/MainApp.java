@@ -1,10 +1,14 @@
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.application.Application;
 import javafx.concurrent.Worker;
+import javafx.embed.swing.JFXPanel;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -15,18 +19,96 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import netscape.javascript.JSObject;
+
+import javax.swing.*;
 import java.net.URL;
 import java.util.Objects;
 
-public class MainApp extends Application {
+public class MainApp extends JFrame {
     /** for communication to the Javascript engine. */
     private JSObject javascriptConnector;
 
     /** for communication from the Javascript engine. */
     private JavaConnector javaConnector;
-    private TextArea logAreaErr;
-    private TextArea logAreaOut;
+    private JTextArea logAreaErr;
+    private JTextArea logAreaOut;
     private WebEngine webEngine;
+
+    public MainApp() {
+        super("Ultrack");
+
+        // Split the window into two parts
+        JPanel logger = new JPanel();
+        logger.setLayout(new BoxLayout(logger, BoxLayout.Y_AXIS));
+        logAreaOut = new JTextArea();
+        logAreaOut.setEditable(false);
+        logAreaOut.setWrapStyleWord(true);
+        logAreaOut.setLineWrap(true);
+        JScrollPane scrollPaneOut = new JScrollPane(logAreaOut);
+        logAreaErr = new JTextArea();
+        logAreaErr.setEditable(false);
+        logAreaErr.setWrapStyleWord(true);
+        logAreaErr.setLineWrap(true);
+        JScrollPane scrollPaneErr = new JScrollPane(logAreaErr);
+        logger.add(new JLabel("Ultrack Server Log"));
+        logger.add(scrollPaneOut);
+        logger.add(new JLabel("Ultrack Server Error Log"));
+        logger.add(scrollPaneErr);
+
+        JFXPanel fxPanel = new JFXPanel();
+        JSplitPane root = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, logger, fxPanel);
+        root.setDividerLocation(0.7);
+//        root.setOneTouchExpandable(true);
+//        root.add(fxPanel);
+//        root.add(logger);
+
+        AppMenu appMenu = new AppMenu();
+        setJMenuBar(appMenu);
+        appMenu.exitMenu.addActionListener(actionEvent -> {
+            this.dispose();
+        });
+
+        Platform.runLater(() -> {
+            try {
+                WebView webView = new WebView();
+                fxPanel.setScene(new Scene(webView));
+                webEngine = webView.getEngine();
+                try {
+                    Task<Void> task = new Task<Void>() {
+                        @Override
+                        protected Void call() {
+                            String path = null;
+                            try {
+                                path = CondaEnvironmentFinder.getUltrackPath();
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            String finalPath = path;
+                            Platform.runLater(() -> onLoadUltrackPath(finalPath));
+                            return null;
+                        }
+                    };
+                    task.run();
+
+                    webEngine.load(String.valueOf(getClass().getResource("/loading.html").toURI()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        add(root);
+        setSize(800, 700);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+
+    }
 
 
     public static void main(String[] args) {
@@ -37,10 +119,12 @@ public class MainApp extends Application {
         ImagePlus imp2 = IJ.openImage("/data_lids/home/ilansilva/Desktop/Fluo-N2DL-HeLa-label.tiff");
         imp2.show();
 
-        Application.launch(MainApp.class, args);
+        new MainApp().setVisible(true);
+//        Platform.setImplicitExit(false);
+//        Application.launch(MainApp.class, args);
     }
 
-    private void onLoadUltrackPath(String ultrackPath, Stage primaryStage) {
+    private void onLoadUltrackPath(String ultrackPath) {
         // get resource from the resources folder
         URL url = getClass().getResource("/index.html");
 
@@ -49,7 +133,7 @@ public class MainApp extends Application {
             if (Worker.State.SUCCEEDED == newValue) {
                 // get the Javascript connector object.
                 javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
-                javaConnector = new JavaConnector(javascriptConnector, ultrackPath, this::log, this::logError, primaryStage);
+                javaConnector = new JavaConnector(javascriptConnector, ultrackPath, this::log, this::logError);
 
                 // set an interface object named 'javaConnector' in the web engine's page
                 JSObject window = (JSObject) webEngine.executeScript("window");
@@ -62,73 +146,17 @@ public class MainApp extends Application {
         webEngine.load(url.toString());
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        Group group = new Group();
-        group.getChildren().add(new AppMenu());
-
-        WebView webView = new WebView();
-        webEngine = webView.getEngine();
-        webEngine.load(Objects.requireNonNull(getClass().getResource("/loading.html")).toString());
-
-        // Split the window into two parts
-        SplitPane root = new SplitPane();
-        BorderPane borderPane = new BorderPane();
-        borderPane.setTop(group);
-        borderPane.setCenter(root);
-
-        // add a logger to the window on the right
-        SplitPane logger = new SplitPane();
-        BorderPane loggerPane = new BorderPane();
-        loggerPane.setTop(new Label("Ultrack Server Log"));
-        logger.setOrientation(javafx.geometry.Orientation.VERTICAL);
-        logAreaOut = new TextArea();
-        logAreaOut.setEditable(false);
-        logAreaOut.setWrapText(true);
-        logAreaOut.setStyle("-fx-background-color:  #EEEEEE; -fx-padding: 10;");
-        loggerPane.setCenter(logAreaOut);
-        logAreaErr = new TextArea();
-        logAreaErr.setEditable(false);
-        logAreaErr.setWrapText(true);
-        logAreaErr.setStyle("-fx-background-color:  #EEEEEE; -fx-padding: 10; -fx-text-fill: red;");
-        BorderPane loggerPaneErr = new BorderPane();
-        loggerPaneErr.setTop(new Label("Ultrack Server Error Log"));
-        loggerPaneErr.setCenter(logAreaErr);
-        logger.setStyle("-fx-background-color: #EEEEEE; -fx-padding: 10;");
-        logger.getItems().addAll(loggerPane, loggerPaneErr);
-
-        root.getItems().addAll(webView, logger);
-        root.setDividerPositions(0.7f, 0.3f);
-
-        primaryStage.setScene(new Scene(borderPane, 800, 700));
-        primaryStage.show();
-
-        Task<Void> task = new Task<Void>() {
-            @Override
-            protected Void call() {
-                try {
-                    String path = CondaEnvironmentFinder.getUltrackPath();
-                    Platform.runLater(() -> onLoadUltrackPath(path, primaryStage));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
-        new Thread(task).start();
-    }
-
     private void log(String message) {
-        Platform.runLater(() -> {
+        SwingUtilities.invokeLater( () -> {
             logAreaOut.setText(message);
-            logAreaOut.setScrollTop(Double.MAX_VALUE);
+//            logAreaOut.setScrollTop(Double.MAX_VALUE);
         });
     }
 
     private void logError(String message) {
-        Platform.runLater(() -> {
+        SwingUtilities.invokeLater( () -> {
             logAreaErr.setText(message);
-            logAreaErr.setScrollTop(Double.MAX_VALUE);
+//            logAreaErr.setScrollTop(Double.MAX_VALUE);
         });
     }
 }

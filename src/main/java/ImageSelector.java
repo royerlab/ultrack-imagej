@@ -5,88 +5,84 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 
-public class ImageSelector extends Application {
+public class ImageSelector extends JDialog {
     private final String[] requestedImages;
-    private final ComboBox<String>[] imageComboBoxes;
+    private final JComboBox<String>[] imageComboBoxesSwing;
 
     public ImageSelector(String [] requestedImages) {
+        super();
         this.requestedImages = requestedImages;
-        this.imageComboBoxes = new ComboBox[this.requestedImages.length];
-    }
+        this.imageComboBoxesSwing = new JComboBox[this.requestedImages.length];
 
-    @Override
-    public void start(Stage primaryStage) {
-        // Creating the dialog
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Image Selector");
+        this.setTitle("Image Selector");
+        this.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
 
-        dialog.setHeaderText("Select an image for each selector");
+        this.setLayout(new BorderLayout(10, 10));
+        // add border to the dialog (insets are the spaces between the border and the content)
+        JPanel contentPane = (JPanel) this.getContentPane();
+        contentPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Setting the button types.
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        JLabel lbTitle = new JLabel("Select an image for each selector");
+        // set font with size 20
+        lbTitle.setFont(lbTitle.getFont().deriveFont(18.0f));
+        this.add(lbTitle, BorderLayout.NORTH);
+
+        JPanel pnSelectors = new JPanel();
+        pnSelectors.setLayout(new GridLayout(this.requestedImages.length, 2, 5, 5));
 
         String[] availableImages = WindowManager.getImageTitles();
 
-        // Layout for the ComboBoxes
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 10, 10, 10));
-
         for (int i = 0; i < this.requestedImages.length; i++) {
-            imageComboBoxes[i] = new ComboBox<>(FXCollections.observableArrayList(availableImages));
-            Label label = new Label(this.requestedImages[i]);
+            imageComboBoxesSwing[i] = new JComboBox<>(availableImages);
+            JLabel label = new JLabel(this.requestedImages[i]);
 
-            imageComboBoxes[i].setMaxWidth(Double.MAX_VALUE);
-            GridPane.setHgrow(imageComboBoxes[i], javafx.scene.layout.Priority.ALWAYS);
-
-            grid.add(label, 0, i * 2);
-            grid.add(imageComboBoxes[i], 0, i * 2 + 1);
+            pnSelectors.add(label);
+            pnSelectors.add(imageComboBoxesSwing[i]);
         }
 
-        // Column constraints to make the column grow
-        ColumnConstraints columnConstraints = new ColumnConstraints();
-        columnConstraints.setFillWidth(true); // Allow the column to grow
-        columnConstraints.setHgrow(Priority.ALWAYS); // Make the column grow horizontally
-        grid.getColumnConstraints().add(columnConstraints); // Apply the column constraints to the grid
+        this.add(pnSelectors, BorderLayout.CENTER);
 
-        dialog.getDialogPane().setContent(grid);
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        JButton okButton = new JButton("OK");
+        JButton cancelButton = new JButton("Cancel");
+        buttonsPanel.add(okButton);
+        buttonsPanel.add(cancelButton);
+        this.add(buttonsPanel, BorderLayout.SOUTH);
 
-        // Handling the dialog result
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == ButtonType.OK) {
-                try {
-                    getSelectedImages();
-                } catch (IllegalArgumentException ex) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error");
-                    alert.setHeaderText("Image selection error");
-                    alert.setContentText(ex.getMessage());
-                    alert.showAndWait();
-                    throw ex;
-                }
+        okButton.addActionListener(e -> {
+            try {
+                getSelectedImages();
+                this.dispose();
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                throw ex;
             }
-            return null;
         });
 
-        // Show the dialog and wait for the user response
-        dialog.showAndWait();
+        cancelButton.addActionListener(e -> this.dispose());
+
+        this.pack();
+        this.setVisible(true);
     }
 
     public ArrayList<String[]> getSelectedImages() {
         ArrayList<String[]> pairs = new ArrayList<>();
-        for (int i = 0; i < imageComboBoxes.length; i++) {
-            if (imageComboBoxes[i].getValue() == null) {
+        for (int i = 0; i < imageComboBoxesSwing.length; i++) {
+            if (imageComboBoxesSwing[i].getSelectedItem() == null) {
                 throw new IllegalArgumentException("Please select an image for each selector.\nYou missed " + this.requestedImages[i] + ".");
             }
-            String image = imageComboBoxes[i].getValue();
+            String image = (String) imageComboBoxesSwing[i].getSelectedItem();
             String path = WindowManager.getImage(image).getOriginalFileInfo().getFilePath();
             pairs.add(new String[]{this.requestedImages[i], path});
         }

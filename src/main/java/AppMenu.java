@@ -1,9 +1,8 @@
-import javafx.scene.control.Alert;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
+import javax.swing.*;
 
-public class AppMenu extends MenuBar {
+public class AppMenu extends JMenuBar {
+
+    public JMenuItem exitMenu;
 
     private String setCondaEnv() {
         String currentCondaEnv = CondaEnvironmentFinder.getCurrentCondaEnv();
@@ -14,38 +13,39 @@ public class AppMenu extends MenuBar {
     }
 
     public AppMenu() {
-        Menu fileMenu = new Menu("File");
-        Menu envMenu = new Menu("Environment");
-        Menu helpMenu = new Menu("Help");
+        JMenu fileMenu = new JMenu("File");
+        JMenu envMenu = new JMenu("Environment");
+        JMenu helpMenu = new JMenu("Help");
 
         // File menu
         {
             // Initialization
-            MenuItem exitMenu = new MenuItem("Exit");
+            exitMenu = new JMenuItem("Exit");
+            exitMenu = new JMenuItem("Exit");
 
             // Addition
-            fileMenu.getItems().add(exitMenu);
+            fileMenu.add(exitMenu);
 
             // Action
-            exitMenu.setOnAction(actionEvent -> System.exit(0));
+
         }
 
         // Environment menu
         {
             // Initialization
-            MenuItem currentConda = new MenuItem();
-            MenuItem selectCondaPathMenu = new MenuItem("Select Conda Path");
+            JMenuItem currentConda = new JMenuItem();
+            JMenuItem selectCondaPathMenu = new JMenuItem("Select Conda Path");
 
             String currentCondaEnv = setCondaEnv();
             currentConda.setText(currentCondaEnv);
-            currentConda.setStyle("-fx-text-fill: gray;");
+            //currentConda.setStyle("-fx-text-fill: gray;");
 
             // Addition
-            envMenu.getItems().add(currentConda);
-            envMenu.getItems().add(selectCondaPathMenu);
+            envMenu.add(currentConda);
+            envMenu.add(selectCondaPathMenu);
 
             // Action
-            selectCondaPathMenu.setOnAction(actionEvent -> {
+            selectCondaPathMenu.addActionListener(actionEvent -> {
                 try {
                     String path = CondaEnvironmentFinder.openDialogToFindUltrack();
                     String updatedEnv = setCondaEnv();
@@ -56,21 +56,23 @@ public class AppMenu extends MenuBar {
                 }
             });
 
-            currentConda.setOnAction(actionEvent -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Current Conda Environment");
-                alert.setHeaderText("Current Conda Environment");
-                alert.setContentText(currentCondaEnv + " is selected as the current conda environment located at " + CondaEnvironmentFinder.getCurrentCondaPath());
-                alert.showAndWait();
+            currentConda.addActionListener(actionEvent -> {
+                String title = "Current Conda Environment";
+                String message = currentConda.getText() + " is selected as the current conda environment located at " + CondaEnvironmentFinder.getCurrentCondaPath();
+                JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
             });
         }
 
         {
             // Help menu
-            helpMenu.getItems().add(new MenuItem("About"));
+            helpMenu.add(new JMenuItem("About"));
         }
 
-    this.setStyle("-fx-font: 12px \"Arial\"");
-        getMenus().addAll(fileMenu, envMenu, helpMenu);
+        this.add(fileMenu);
+        this.add(envMenu);
+        this.add(helpMenu);
+
+//    this.setStyle("-fx-font: 12px \"Arial\"");
+//        getMenus().addAll(fileMenu, envMenu, helpMenu);
     }
 }
