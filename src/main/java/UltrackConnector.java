@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 

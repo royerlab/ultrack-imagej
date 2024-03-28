@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import fiji.plugin.trackmate.LoadTrackMatePlugIn;

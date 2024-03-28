@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import javafx.scene.control.Alert;
 
 import javax.swing.*;

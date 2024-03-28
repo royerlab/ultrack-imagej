@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import java.io.File;
 
 public class CondaEnvironment {

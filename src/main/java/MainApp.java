@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;

@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import ij.WindowManager;
 import javafx.application.Application;
 import javafx.collections.FXCollections;

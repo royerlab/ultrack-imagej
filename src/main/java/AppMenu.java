@@ -1,5 +1,3 @@
-package org.czbiohub.royerlab;
-
 import javafx.scene.control.Alert;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -72,6 +70,7 @@ public class AppMenu extends MenuBar {
             helpMenu.getItems().add(new MenuItem("About"));
         }
 
+    this.setStyle("-fx-font: 12px \"Arial\"");
         getMenus().addAll(fileMenu, envMenu, helpMenu);
     }
 }
