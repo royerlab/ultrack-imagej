@@ -21,6 +21,7 @@ jobs:
         with:
           java-version: '8'
           distribution: 'zulu'
+          java-package: 'jdk+fx'
           cache: 'maven'
       - name: Set up CI environment
         run: .github/setup.sh
