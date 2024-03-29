@@ -117,14 +117,7 @@ public class MainApp extends JFrame {
     public static void main(String[] args) {
         ImageJ.main(args);
 
-        ImagePlus imp = IJ.openImage("/data_lids/home/ilansilva/Desktop/Fluo-N2DL-HeLa-image2.tiff");
-        imp.show();
-        ImagePlus imp2 = IJ.openImage("/data_lids/home/ilansilva/Desktop/Fluo-N2DL-HeLa-label.tiff");
-        imp2.show();
-
         new MainApp().setVisible(true);
-//        Platform.setImplicitExit(false);
-//        Application.launch(MainApp.class, args);
     }
 
     private void onLoadUltrackPath(String ultrackPath) {
