@@ -83,11 +83,14 @@ public class UltrackConnector {
         UltrackWebsocketClient c;
         try {
             c = new UltrackWebsocketClient(
-                    new URI("ws://127.0.0.1:" + port + url),
+                    new URI("ws://localhost:" + port + url),
                     onMessage
             );
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            System.out.println("Error connecting to the websocket: " + e.getMessage());
+            return;
         }
         c.connect();
         CountDownLatch latch = c.latch;

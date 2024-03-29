@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.net.URL;
 import java.util.Objects;
 
@@ -46,6 +47,7 @@ public class MainApp extends JFrame {
         logAreaOut.setLineWrap(true);
         JScrollPane scrollPaneOut = new JScrollPane(logAreaOut);
         logAreaErr = new JTextArea();
+        logAreaErr.setForeground(Color.RED);
         logAreaErr.setEditable(false);
         logAreaErr.setWrapStyleWord(true);
         logAreaErr.setLineWrap(true);
@@ -90,7 +92,7 @@ public class MainApp extends JFrame {
                     };
                     task.run();
 
-                    webEngine.load(String.valueOf(getClass().getResource("/loading.html").toURI()));
+                    webEngine.load(String.valueOf(getClass().getResource("/web/loading.html").toURI()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -126,7 +128,7 @@ public class MainApp extends JFrame {
 
     private void onLoadUltrackPath(String ultrackPath) {
         // get resource from the resources folder
-        URL url = getClass().getResource("/index.html");
+        URL url = getClass().getResource("/web/index.html");
 
         // set up the listener
         webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {

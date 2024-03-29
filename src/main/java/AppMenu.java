@@ -71,8 +71,5 @@ public class AppMenu extends JMenuBar {
         this.add(fileMenu);
         this.add(envMenu);
         this.add(helpMenu);
-
-//    this.setStyle("-fx-font: 12px \"Arial\"");
-//        getMenus().addAll(fileMenu, envMenu, helpMenu);
     }
 }

@@ -161,11 +161,10 @@ document.getElementById('runButton').addEventListener('click', function() {
 
     try {
         javaConnector.connectToUltrackWebsocket(url, JSON.stringify(updatedJson))
+        showLoadingOverlay();
     } catch (e) {
-        // document.getElementById('server-status').innerHTML = e;
+        document.getElementById("startServer").innerHTML = e;
     }
-
-    showLoadingOverlay();
 });
 
 document.getElementById('viewButton').addEventListener('click', function() {
