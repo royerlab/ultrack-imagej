@@ -13,7 +13,7 @@
 
     <groupId>org.czbiohub.royerlab</groupId>
     <artifactId>ultrack-imagej</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
     <name>Ultrack ImageJ</name>
     <description>Ultrack Plugin for ImageJ.</description>
     <url>https://royerlab.github.io/ultrack/</url>

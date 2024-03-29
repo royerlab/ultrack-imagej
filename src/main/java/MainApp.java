@@ -58,8 +58,9 @@ public class MainApp extends JFrame {
         logger.add(scrollPaneErr);
 
         JFXPanel fxPanel = new JFXPanel();
-        JSplitPane root = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, logger, fxPanel);
+        JSplitPane root = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, fxPanel, logger);
         root.setDividerLocation(0.7);
+        root.setResizeWeight(1.0);
 //        root.setOneTouchExpandable(true);
 //        root.add(fxPanel);
 //        root.add(logger);
