@@ -174,15 +174,38 @@ public class CondaEnvironmentFinder extends JFrame {
         }
     }
 
-    private static boolean checkIfCanExecute(String path) {
-        try {
-            ProcessBuilder builder = new ProcessBuilder(path);
-            Process process = builder.start();
-            int exitCode = process.waitFor();
-            return exitCode == 0;
-        } catch (IOException | InterruptedException e) {
-            return false;
+    /**
+     * Check if a given path can be executed.
+     *
+     * @param path the path to check.
+     * @param strict if true, it will try to execute the path. If false, it will check if the path is executable.
+     * @return true if the path can be executed, false otherwise.
+     */
+    private static boolean checkIfCanExecute(String path, boolean strict) {
+        if (!strict) {
+            return new File(path).canExecute();
+        } else {
+            try {
+                ProcessBuilder builder = new ProcessBuilder(path);
+                Process process = builder.start();
+                int exitCode = process.waitFor();
+                return exitCode == 0;
+            } catch (IOException | InterruptedException e) {
+                return false;
+            }
         }
+    }
+
+
+    /**
+     * Check if a given path can be executed. It will not try to execute the path.
+     *
+     * @param path the path to check.
+     * @return true if the path can be executed, false otherwise.
+     * @see #checkIfCanExecute(String, boolean) for a strict check if the path can be executed.
+     */
+    private static boolean checkIfCanExecute(String path) {
+        return checkIfCanExecute(path, false);
     }
 
     public static String openDialogToFindUltrack() throws InterruptedException {

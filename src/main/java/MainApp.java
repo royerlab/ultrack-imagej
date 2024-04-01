@@ -19,32 +19,19 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
-import ij.IJ;
 import ij.ImageJ;
-import ij.ImagePlus;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
-import javafx.application.Application;
 import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import javafx.stage.Stage;
 import netscape.javascript.JSObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
-import java.util.Objects;
 
 public class MainApp extends JFrame {
     /** for communication to the Javascript engine. */
@@ -54,6 +41,7 @@ public class MainApp extends JFrame {
     private JavaConnector javaConnector;
     private JTextArea logAreaErr;
     private JTextArea logAreaOut;
+    private JTextArea internalLogArea;
     private WebEngine webEngine;
 
     public MainApp() {
@@ -66,25 +54,28 @@ public class MainApp extends JFrame {
         logAreaOut.setEditable(false);
         logAreaOut.setWrapStyleWord(true);
         logAreaOut.setLineWrap(true);
-        JScrollPane scrollPaneOut = new JScrollPane(logAreaOut);
         logAreaErr = new JTextArea();
         logAreaErr.setForeground(Color.RED);
         logAreaErr.setEditable(false);
         logAreaErr.setWrapStyleWord(true);
         logAreaErr.setLineWrap(true);
-        JScrollPane scrollPaneErr = new JScrollPane(logAreaErr);
-        logger.add(new JLabel("Ultrack Server Log"));
-        logger.add(scrollPaneOut);
-        logger.add(new JLabel("Ultrack Server Error Log"));
-        logger.add(scrollPaneErr);
+        internalLogArea = new JTextArea();
+        internalLogArea.setEditable(false);
+        internalLogArea.setWrapStyleWord(true);
+        internalLogArea.setLineWrap(true);
+        internalLogArea.setForeground(Color.GRAY);
+        logger.add(new JLabel("Ultrack Log"));
+        logger.add(new JScrollPane(logAreaOut));
+        logger.add(new JLabel("Ultrack Error Log"));
+        logger.add(new JScrollPane(logAreaErr));
+        logger.add(new JLabel("Server API Log"));
+        logger.add(new JScrollPane(internalLogArea));
 
         JFXPanel fxPanel = new JFXPanel();
         JSplitPane root = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, fxPanel, logger);
         root.setDividerLocation(0.7);
         root.setResizeWeight(1.0);
-//        root.setOneTouchExpandable(true);
-//        root.add(fxPanel);
-//        root.add(logger);
+
 
         AppMenu appMenu = new AppMenu();
         setJMenuBar(appMenu);
@@ -150,7 +141,7 @@ public class MainApp extends JFrame {
             if (Worker.State.SUCCEEDED == newValue) {
                 // get the Javascript connector object.
                 javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
-                javaConnector = new JavaConnector(javascriptConnector, ultrackPath, this::log, this::logError);
+                javaConnector = new JavaConnector(javascriptConnector, ultrackPath, this::onLog, this::onLogError, this::onServerLog);
 
                 // set an interface object named 'javaConnector' in the web engine's page
                 JSObject window = (JSObject) webEngine.executeScript("window");
@@ -163,17 +154,22 @@ public class MainApp extends JFrame {
         webEngine.load(url.toString());
     }
 
-    private void log(String message) {
+    private void onLog(String message) {
         SwingUtilities.invokeLater( () -> {
             logAreaOut.setText(message);
-//            logAreaOut.setScrollTop(Double.MAX_VALUE);
         });
     }
 
-    private void logError(String message) {
+    private void onLogError(String message) {
         SwingUtilities.invokeLater( () -> {
             logAreaErr.setText(message);
-//            logAreaErr.setScrollTop(Double.MAX_VALUE);
         });
     }
+
+    private void onServerLog(String message) {
+        SwingUtilities.invokeLater( () -> {
+            internalLogArea.append(message + "\n");
+        });
+    }
+
 }

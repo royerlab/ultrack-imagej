@@ -27,20 +27,36 @@ import java.net.URISyntaxException;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-public class UltrackConnector {
+public abstract class UltrackConnector {
     private final String ultrackPath;
     private Process currentProcess = null;
-    private int port = -1;
 
-    public UltrackConnector(String ultrackPath) {
+    private final Consumer<String> onLog;
+    private int port = -1;
+    private Thread serverListenerThread;
+
+    public UltrackConnector(String ultrackPath, Consumer<String> onLog) {
         this.ultrackPath = ultrackPath;
+        this.onLog = onLog;
     }
 
     public void stopServer() {
         if (currentProcess != null) {
+            if (serverListenerThread != null) {
+                serverListenerThread.interrupt();
+                serverListenerThread = null;
+            }
             currentProcess.destroy();
+            currentProcess = null;
         }
     }
+
+    private void onExecutionError(String message) {
+        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
+        onExecutionErrorAction();
+    }
+
+    public abstract void onExecutionErrorAction();
 
     public int getPort() {
         return port;
@@ -64,9 +80,9 @@ public class UltrackConnector {
                 try {
                     currentProcess = processBuilder.start();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    onExecutionError("Error starting the server: " + ex.getMessage());
+                    return;
                 }
-
 
                 // wait for the server to end
 
@@ -74,18 +90,19 @@ public class UltrackConnector {
                 throw new RuntimeException(e);
             }
 
-            new Thread(() -> {
+            this.serverListenerThread = new Thread(() -> {
                 try {
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(currentProcess.getInputStream()))) {
                         String line;
                         while ((line = reader.readLine()) != null) {
-                            System.out.println("Server said: " + line);
+                            this.onLog.accept(line);
                         }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    onExecutionError("Error reading the server output: " + e.getMessage());
                 }
-            }).start();
+            });
+            this.serverListenerThread.start();
         });
 
     }
@@ -100,17 +117,19 @@ public class UltrackConnector {
         }
     }
 
-    public void connectToWebsocket(String url, String message, Consumer<String> onMessage) {
+    public void connectToWebsocket(String url, String message, Consumer<String> onMessage, Consumer<String> onError, Consumer<String> onClose) {
         UltrackWebsocketClient c;
         try {
             c = new UltrackWebsocketClient(
                     new URI("ws://localhost:" + port + url),
-                    onMessage
+                    onMessage,
+                    onError,
+                    onClose
             );
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         } catch (Exception e) {
-            System.out.println("Error connecting to the websocket: " + e.getMessage());
+            onExecutionError("Error connecting to the websocket: " + e.getMessage());
             return;
         }
         c.connect();
@@ -120,7 +139,7 @@ public class UltrackConnector {
             System.out.println(message);
             c.send(message);
         } catch (InterruptedException e) {
-            JOptionPane.showMessageDialog(null, "Error connecting to the websocket: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            onExecutionError("Error connecting to the websocket: " + e.getMessage());
         }
     }
 }

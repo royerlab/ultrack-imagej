@@ -62,22 +62,30 @@ public class UltrackWebsocketClient extends WebSocketClient {
 
     public final CountDownLatch latch = new CountDownLatch(1);
     public final Consumer<String> onMessage;
+    private final Consumer<String> onError;
+    private final Consumer<String> onClose;
 
-    public UltrackWebsocketClient(URI serverUri, Draft draft, Consumer<String> onMessage) {
+    public UltrackWebsocketClient(URI serverUri, Draft draft, Consumer<String> onMessage, Consumer<String> onError, Consumer<String> onClose) {
         super(serverUri, draft);
         this.onMessage = onMessage;
+        this.onError = onError;
+        this.onClose = onClose;
         this.setConnectionLostTimeout(-1);
     }
 
-    public UltrackWebsocketClient(URI serverURI, Consumer<String> onMessage) {
+    public UltrackWebsocketClient(URI serverURI, Consumer<String> onMessage, Consumer<String> onError, Consumer<String> onClose) {
         super(serverURI);
         this.onMessage = onMessage;
+        this.onError = onError;
+        this.onClose = onClose;
         this.setConnectionLostTimeout(-1);
     }
 
-    public UltrackWebsocketClient(URI serverUri, Map<String, String> httpHeaders, Consumer<String> onMessage) {
+    public UltrackWebsocketClient(URI serverUri, Map<String, String> httpHeaders, Consumer<String> onMessage, Consumer<String> onError, Consumer<String> onClose) {
         super(serverUri, httpHeaders);
         this.onMessage = onMessage;
+        this.onError = onError;
+        this.onClose = onClose;
         this.setConnectionLostTimeout(-1);
     }
 
@@ -93,13 +101,13 @@ public class UltrackWebsocketClient extends WebSocketClient {
     }
 
     @Override
-    public void onClose(int i, String s, boolean b) {
-        System.out.println("closed " + s);
+    public void onClose(int code, String s, boolean b) {
+        this.onClose.accept("Closed with exit code " + code + ". additional info: " + s);
     }
 
     @Override
     public void onError(Exception ex) {
-        System.out.println("error " + ex.getMessage());
+        this.onError.accept(ex.getMessage());
     }
 
 }

@@ -133,6 +133,10 @@ var jsConnector = {
         }
         showBody();
     },
+    /**
+     * Update selected images.
+     * @param images - A list of paths to the selected images.
+     */
     updateSelectedImages: function (images) {
         try {
             json = editor.get();
@@ -148,11 +152,29 @@ var jsConnector = {
         } catch (e) {
         }
     },
+    /**
+     * Finish tracking.
+     *
+     * This function is called when the tracking process is finished.
+     */
     finishTracking: function () {
         hideLoadingOverlay();
         document.getElementById("viewButton").disabled = false;
         document.getElementById("viewButton").classList.replace("btn-outline-primary", "btn-primary")
         document.getElementById("runButton").classList.replace("btn-primary", "btn-secondary")
+    },
+    /**
+     * Close the connection.
+     * This function is called when the user closes the websocket connection.
+     */
+    closeConnection: function () {
+        hideLoadingOverlay();
+    },
+    /**
+     *
+     */
+    reset: function () {
+        location.reload();
     }
 };
 

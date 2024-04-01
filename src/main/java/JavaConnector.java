@@ -47,20 +47,27 @@ public class JavaConnector {
     private final String ultrackPath;
     private final Consumer<String> onLog;
     private final Consumer<String> onError;
+    private final Consumer<String> onServerLog;
     private UltrackConnector ultrackConnector;
 
-    public JavaConnector(JSObject javascriptConnector, String ultrackPath, Consumer<String> onLog, Consumer<String> onError) {
+    public JavaConnector(JSObject javascriptConnector, String ultrackPath, Consumer<String> onLog, Consumer<String> onError, Consumer<String> onServerLog) {
         this.javascriptConnector = javascriptConnector;
         this.ultrackPath = ultrackPath;
         this.onLog = onLog;
         this.onError = onError;
+        this.onServerLog = onServerLog;
     }
 
     @SuppressWarnings("unused")
     public void startUltrackServer() {
         System.out.println("Starting Ultrack Server");
 
-        ultrackConnector = new UltrackConnector(ultrackPath);
+        ultrackConnector = new UltrackConnector(ultrackPath, onServerLog) {
+            @Override
+            public void onExecutionErrorAction() {
+                javascriptConnector.call("reset");
+            }
+        };
         ultrackConnector.startServer();
 
         javascriptConnector.call("setPort", ultrackConnector.getPort());
@@ -134,20 +141,33 @@ public class JavaConnector {
 
     @SuppressWarnings("unused")
     public void connectToUltrackWebsocket(String url, String message) {
-        ultrackConnector.connectToWebsocket(url, message, (String response) -> {
-            // parse json response
-            Gson gson = new Gson();
-            JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
-            String err = jsonObject.get("err_log").getAsString();
-            String out = jsonObject.get("std_log").getAsString();
-            onLog.accept(out);
-            onError.accept(err);
-            Platform.runLater(() -> javascriptConnector.call("updateJson", response));
+        ultrackConnector.connectToWebsocket(url, message, this::onMessageConsumer, this::onErrorConsumer, this::onCloseConsumer);
+    }
 
-            if (jsonObject.get("status").getAsString().equals("success")) {
-                Platform.runLater(() -> javascriptConnector.call("finishTracking", ""));
+    private void onMessageConsumer(String response) {
+        // parse json response
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+        String err = jsonObject.get("err_log").getAsString();
+        String out = jsonObject.get("std_log").getAsString();
+        onLog.accept(out);
+        onError.accept(err);
+        Platform.runLater(() -> javascriptConnector.call("updateJson", response));
 
-            }
-        });
+        if (jsonObject.get("status").getAsString().equals("success")) {
+            Platform.runLater(() -> javascriptConnector.call("finishTracking", ""));
+
+        }
+    }
+
+    private void onErrorConsumer(String error) {
+        onError.accept(error);
+        JOptionPane.showMessageDialog(null, error, "Error", JOptionPane.ERROR_MESSAGE);
+        Platform.runLater(() -> javascriptConnector.call("closeConnection"));
+    }
+
+    private void onCloseConsumer(String message) {
+        onLog.accept(message);
+        Platform.runLater(() -> javascriptConnector.call("closeConnection"));
     }
 }
