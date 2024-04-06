@@ -14,7 +14,7 @@
     <version>0.2-SNAPSHOT</version>
     <name>Ultrack ImageJ</name>
     <description>Ultrack Plugin for ImageJ.</description>
-    <url>https://royerlab.github.io/ultrack/</url>l
+    <url>https://royerlab.github.io/ultrack/</url>
     <inceptionYear>2010</inceptionYear>
     <organization>
         <name>RoyerLab</name>

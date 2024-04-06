@@ -21,11 +21,24 @@
  */
 import javax.swing.*;
 
+/**
+ * AppMenu class is a JMenuBar that contains the menu items for the application.
+ * <p>
+ * The menu items are:
+ * <ul>
+ * <li><b>File</b>, which contains the exit menu item.</li>
+ * <li><b>Environment</b>, which contains the information about the current conda environment to execute ultrack and an
+ * option to select a different conda environment.</li>
+ * <li><b>Help</b>, which contains the about menu item.</li>
+ * </ul>
+ * <p>
+ * The menu items are added to the JMenuBar and the actions are defined for each menu item.
+ */
 public class AppMenu extends JMenuBar {
 
     public JMenuItem exitMenu;
 
-    private String setCondaEnv() {
+    private static String setCondaEnv() {
         String currentCondaEnv = CondaEnvironmentFinder.getCurrentCondaEnv();
         if (currentCondaEnv == null) {
             currentCondaEnv = "No conda env selected";
@@ -33,40 +46,35 @@ public class AppMenu extends JMenuBar {
         return currentCondaEnv;
     }
 
+    /**
+     * Constructor for the AppMenu class.
+     * <p>
+     * The constructor initializes the menu items for the application and adds them to the JMenuBar.
+     */
     public AppMenu() {
         JMenu fileMenu = new JMenu("File");
         JMenu envMenu = new JMenu("Environment");
         JMenu helpMenu = new JMenu("Help");
 
-        // File menu
-        {
-            // Initialization
-            exitMenu = new JMenuItem("Exit");
-            exitMenu = new JMenuItem("Exit");
+        // add file menu
+        exitMenu = new JMenuItem("Exit");
+        exitMenu = new JMenuItem("Exit");
 
-            // Addition
-            fileMenu.add(exitMenu);
+        fileMenu.add(exitMenu);
 
-            // Action
+        // add environment menu
+        JMenuItem currentConda = new JMenuItem();
+        JMenuItem selectCondaPathMenu = new JMenuItem("Select Conda Path");
 
-        }
+        String currentCondaEnv = setCondaEnv();
+        currentConda.setText(currentCondaEnv);
 
-        // Environment menu
-        {
-            // Initialization
-            JMenuItem currentConda = new JMenuItem();
-            JMenuItem selectCondaPathMenu = new JMenuItem("Select Conda Path");
+        envMenu.add(currentConda);
+        envMenu.add(selectCondaPathMenu);
 
-            String currentCondaEnv = setCondaEnv();
-            currentConda.setText(currentCondaEnv);
-            //currentConda.setStyle("-fx-text-fill: gray;");
-
-            // Addition
-            envMenu.add(currentConda);
-            envMenu.add(selectCondaPathMenu);
-
-            // Action
-            selectCondaPathMenu.addActionListener(actionEvent -> {
+        // Action
+        selectCondaPathMenu.addActionListener(actionEvent -> {
+            SwingUtilities.invokeLater(() -> {
                 try {
                     String path = CondaEnvironmentFinder.openDialogToFindUltrack();
                     String updatedEnv = setCondaEnv();
@@ -76,13 +84,13 @@ public class AppMenu extends JMenuBar {
                     e.printStackTrace();
                 }
             });
+        });
 
-            currentConda.addActionListener(actionEvent -> {
-                String title = "Current Conda Environment";
-                String message = currentConda.getText() + " is selected as the current conda environment located at " + CondaEnvironmentFinder.getCurrentCondaPath();
-                JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
-            });
-        }
+        currentConda.addActionListener(actionEvent -> {
+            String title = "Current Conda Environment";
+            String message = currentConda.getText() + " is selected as the current conda environment located at " + CondaEnvironmentFinder.getCurrentCondaPath();
+            JOptionPane.showMessageDialog(null, message, title, JOptionPane.INFORMATION_MESSAGE);
+        });
 
         {
             // Help menu

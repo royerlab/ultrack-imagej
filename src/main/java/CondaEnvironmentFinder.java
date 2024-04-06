@@ -27,10 +27,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.prefs.Preferences;
 
-public class CondaEnvironmentFinder extends JFrame {
+public class CondaEnvironmentFinder extends JDialog {
+
+    private final Object lock = new Object();
+    private boolean actionCompleted = false;
 
     public static void main(String[] args) {
         try {
@@ -53,8 +55,7 @@ public class CondaEnvironmentFinder extends JFrame {
         return prefs.get("condaEnv", null);
     }
 
-    public CondaEnvironmentFinder(CountDownLatch latch) {
-        super("Conda Environment Selector");
+    public CondaEnvironmentFinder() {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 220);
         setLocationRelativeTo(null); // Center on screen
@@ -133,12 +134,21 @@ public class CondaEnvironmentFinder extends JFrame {
 
                     Preferences prefs = Preferences.userNodeForPackage(CondaEnvironmentFinder.class);
                     prefs.put("condaEnv", ((CondaEnvironment) condaEnvComboBox.getSelectedItem()).getPath());
-                    latch.countDown();
+                    synchronized (lock) {
+                        actionCompleted = true;
+                        lock.notify(); // Notify the waiting thread
+                    }
                     dispose();
                 }
             });
             final JButton btnCancel = new JButton("Cancel");
-            btnCancel.addActionListener(e -> {this.dispose(); latch.countDown();});
+            btnCancel.addActionListener(e -> {
+                this.dispose();
+                synchronized (lock) {
+                    actionCompleted = true;
+                    lock.notify(); // Notify the waiting thread
+                }
+            });
             pnSouth.add(btnOk);
             pnSouth.add(btnCancel);
             add(pnSouth, BorderLayout.SOUTH);
@@ -208,6 +218,8 @@ public class CondaEnvironmentFinder extends JFrame {
         return checkIfCanExecute(path, false);
     }
 
+
+
     public static String openDialogToFindUltrack() throws InterruptedException {
         boolean ultrackAvailable = checkIfCanExecute("ultrack");
 
@@ -234,20 +246,31 @@ public class CondaEnvironmentFinder extends JFrame {
                 }
             }
 
-            final CountDownLatch latch = new CountDownLatch(1);
 
-            SwingUtilities.invokeLater(() -> {
-                frame[0] = new CondaEnvironmentFinder(latch);
-                frame[0].setVisible(true);
-            });
-
-            latch.await();
+            System.out.println("Opening Conda Environment Finder");
+            frame[0] = new CondaEnvironmentFinder();
+            frame[0].pack();
+            frame[0].setVisible(true);
+            frame[0].execute();
 
             CondaEnvironment selectedEnv = (CondaEnvironment) frame[0].condaEnvComboBox.getSelectedItem();
 
             return selectedEnv.getPath();
         } else {
             return null;
+        }
+    }
+
+    private void execute() {
+        synchronized (lock) {
+            while (!actionCompleted) {
+                try {
+                    lock.wait(); // Wait until the action is completed
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println("Interrupted!");
+                }
+            }
         }
     }
 
