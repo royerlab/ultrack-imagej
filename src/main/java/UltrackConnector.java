@@ -70,7 +70,7 @@ public abstract class UltrackConnector {
         System.out.println(randomPort);
         port = randomPort;
 
-        SwingUtilities.invokeLater(() -> {
+        new Thread(() -> {
             try {
                 ProcessBuilder processBuilder = new ProcessBuilder();
                 // Example command that lists directory content. For Windows, you might use "cmd", "/c", "dir".
@@ -80,7 +80,7 @@ public abstract class UltrackConnector {
                 try {
                     currentProcess = processBuilder.start();
                 } catch (IOException ex) {
-                    onExecutionError("Error starting the server: " + ex.getMessage());
+                    SwingUtilities.invokeLater(() -> onExecutionError("Error starting the server: " + ex.getMessage()));
                     return;
                 }
 
@@ -99,11 +99,11 @@ public abstract class UltrackConnector {
                         }
                     }
                 } catch (IOException e) {
-                    onExecutionError("Error reading the server output: " + e.getMessage());
+                    SwingUtilities.invokeLater(() -> onExecutionError("Error reading the server output: " + e.getMessage()));
                 }
             });
             this.serverListenerThread.start();
-        });
+        }).start();
 
     }
 

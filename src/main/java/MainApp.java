@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import ultrack_binary.CondaEnvironmentFinder;
 import ij.ImageJ;
 import javafx.application.Platform;
 import javafx.concurrent.Task;

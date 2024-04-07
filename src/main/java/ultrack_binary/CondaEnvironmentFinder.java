@@ -1,4 +1,4 @@
-/*-
+package ultrack_binary;/*-
  * #%L
  * Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
  * %%

@@ -19,6 +19,8 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import ultrack_binary.CondaEnvironmentFinder;
+
 import javax.swing.*;
 
 /**
@@ -74,16 +76,18 @@ public class AppMenu extends JMenuBar {
 
         // Action
         selectCondaPathMenu.addActionListener(actionEvent -> {
-            SwingUtilities.invokeLater(() -> {
+            selectCondaPathMenu.setEnabled(false);
+            new Thread(() -> {
                 try {
                     String path = CondaEnvironmentFinder.openDialogToFindUltrack();
                     String updatedEnv = setCondaEnv();
                     currentConda.setText(updatedEnv);
                     System.out.println("Selected conda environment: " + path);
+                    selectCondaPathMenu.setEnabled(true);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            });
+            }).start();
         });
 
         currentConda.addActionListener(actionEvent -> {
