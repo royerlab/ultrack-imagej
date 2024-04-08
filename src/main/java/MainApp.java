@@ -94,10 +94,15 @@ public class MainApp extends JFrame {
                         @Override
                         protected Void call() {
                             String path = null;
-                            try {
-                                path = CondaEnvironmentFinder.getUltrackPath();
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
+                            while (path == null) {
+                                try {
+                                    path = CondaEnvironmentFinder.getUltrackPath();
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                if (path == null) {
+                                    JOptionPane.showMessageDialog(null, "You can't proceed without selecting the ultrack path", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
                             }
                             String finalPath = path;
                             Platform.runLater(() -> onLoadUltrackPath(finalPath));

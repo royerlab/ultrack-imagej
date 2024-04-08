@@ -65,7 +65,9 @@ public class JavaConnector {
         ultrackConnector = new UltrackConnector(ultrackPath, onServerLog) {
             @Override
             public void onExecutionErrorAction() {
-                javascriptConnector.call("reset");
+                Platform.runLater(() -> {
+                    javascriptConnector.call("resetPage");
+                });
             }
         };
         ultrackConnector.startServer();
