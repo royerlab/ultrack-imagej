@@ -312,7 +312,6 @@ public class CondaEnvironmentFinder extends JDialog {
                 return null;
             }
 
-
             CondaEnvironment selectedEnv = (CondaEnvironment) frame[0].condaEnvComboBox.getSelectedItem();
 
             return selectedEnv.getPath();

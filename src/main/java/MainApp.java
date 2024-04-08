@@ -78,11 +78,25 @@ public class MainApp extends JFrame {
         root.setResizeWeight(1.0);
 
 
-        AppMenu appMenu = new AppMenu();
+        AppMenu appMenu = new AppMenu() {
+            @Override
+            public void onExit() {
+                dispose();
+            }
+
+            @Override
+            public void onUpdateCondaEnv() {
+                String path = null;
+                try {
+                    path = CondaEnvironmentFinder.getUltrackPath();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                String finalPath = path;
+                Platform.runLater(() -> onLoadUltrackPath(finalPath));
+            }
+        };
         setJMenuBar(appMenu);
-        appMenu.exitMenu.addActionListener(actionEvent -> {
-            this.dispose();
-        });
 
         Platform.runLater(() -> {
             try {

@@ -36,7 +36,7 @@ import javax.swing.*;
  * <p>
  * The menu items are added to the JMenuBar and the actions are defined for each menu item.
  */
-public class AppMenu extends JMenuBar {
+public abstract class AppMenu extends JMenuBar {
 
     public JMenuItem exitMenu;
 
@@ -63,6 +63,9 @@ public class AppMenu extends JMenuBar {
         exitMenu = new JMenuItem("Exit");
 
         fileMenu.add(exitMenu);
+        exitMenu.addActionListener(actionEvent -> {
+            onExit();
+        });
 
         // add environment menu
         JMenuItem currentConda = new JMenuItem();
@@ -84,6 +87,7 @@ public class AppMenu extends JMenuBar {
                     currentConda.setText(updatedEnv);
                     System.out.println("Selected conda environment: " + path);
                     selectCondaPathMenu.setEnabled(true);
+                    onUpdateCondaEnv();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -105,4 +109,8 @@ public class AppMenu extends JMenuBar {
         this.add(envMenu);
         this.add(helpMenu);
     }
+
+    public abstract void onExit();
+
+    public abstract void onUpdateCondaEnv();
 }
