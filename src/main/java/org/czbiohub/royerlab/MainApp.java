@@ -1,4 +1,4 @@
-/*-
+package org.czbiohub.royerlab;/*-
  * #%L
  * Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
  * %%
@@ -19,7 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import ultrack_binary.CondaEnvironmentFinder;
 import ij.ImageJ;
 import javafx.application.Platform;
 import javafx.concurrent.Task;

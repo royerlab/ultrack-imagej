@@ -1,4 +1,4 @@
-package ultrack_binary;/*-
+package org.czbiohub.royerlab;/*-
  * #%L
  * Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
  * %%
@@ -66,7 +66,7 @@ public class CondaEnvironmentFinder extends JDialog {
 
     public CondaEnvironmentFinder() {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 220);
+        setSize(600, 320);
         setLocationRelativeTo(null); // Center on screen
 
         JPanel contentPane = new JPanel();
