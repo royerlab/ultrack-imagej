@@ -33,15 +33,11 @@ jobs:
           fi
           cd ..
 
-      - name: find media files
-        id: grep
+      - name: Find and copy media files
         run: |
           FILES=$(grep -oP '!\[.*?\]\(\K.*?(?=\))' "imagej.github.io/_pages/plugins/ultrack.md")
-          echo "files=${FILES}" >> $GITHUB_OUTPUT
-
-      - name: Copy media files
-        run: |
-          for FILE in ${{ steps.grep.outputs.files }} 
+          
+          for FILE in $FILES;
           do
             mkdir -p "ultrack-imagej/$(dirname "$FILE")"
             cp "imagej.github.io/$FILE" "ultrack-imagej/$FILE"
