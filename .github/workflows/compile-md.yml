@@ -1,0 +1,68 @@
+name: "Compile MD file"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  compile-and-push:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout imagej.github.io
+        uses: actions/checkout@v3
+        with:
+          repository: 'royerlab/imagej.github.io'
+          path: 'imagej.github.io'
+
+      - name: Checkout this repository
+        uses: actions/checkout@v3
+        with:
+          path: 'ultrack-imagej'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create or switch to branch
+        run: |
+          cd ultrack-imagej
+          if git show-ref --verify --quiet "refs/heads/update-branch"; then
+            echo "Branch exists, checking out."
+            git checkout update-branch
+          else
+            echo "Branch does not exist, creating and checking out."
+            git checkout -b update-branch
+          fi
+          cd ..
+
+      - name: find media files
+        id: grep
+        run: |
+          FILES=$(grep -oP '!\[.*?\]\(\K.*?(?=\))' "imagej.github.io/_pages/plugins/ultrack.md")
+          echo "::set-output name=files::${FILES}"
+
+      - name: Copy media files
+        run: |
+          for FILE in ${{ steps.grep.outputs.files }} 
+          do
+            mkdir -p "ultrack-imagej/$(dirname "$FILE")"
+            cp "imagej.github.io/$FILE" "ultrack-imagej/$FILE"
+            cp imagej.github.io/_pages/plugins/ultrack.md ultrack-imagej/README.md
+          done
+
+      - name: Remove ImageJ includes
+        run: |
+          cd ultrack-imagej
+          sed -i '/^{%/d' README.md
+
+
+      - name: Commit
+        run: |
+          if git diff --exit-code; then
+            echo "No changes to commit."
+            exit 0
+          else
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add .
+            git commit -m "update"
+            git push origin update-branch
+          fi
