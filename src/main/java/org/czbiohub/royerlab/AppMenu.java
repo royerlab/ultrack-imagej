@@ -1,4 +1,4 @@
-/*-
+package org.czbiohub.royerlab;/*-
  * #%L
  * Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
  * %%
@@ -19,12 +19,11 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import ultrack_binary.CondaEnvironmentFinder;
 
 import javax.swing.*;
 
 /**
- * AppMenu class is a JMenuBar that contains the menu items for the application.
+ * org.czbiohub.royerlab.AppMenu class is a JMenuBar that contains the menu items for the application.
  * <p>
  * The menu items are:
  * <ul>
@@ -49,7 +48,7 @@ public abstract class AppMenu extends JMenuBar {
     }
 
     /**
-     * Constructor for the AppMenu class.
+     * Constructor for the org.czbiohub.royerlab.AppMenu class.
      * <p>
      * The constructor initializes the menu items for the application and adds them to the JMenuBar.
      */
@@ -87,7 +86,8 @@ public abstract class AppMenu extends JMenuBar {
                     currentConda.setText(updatedEnv);
                     System.out.println("Selected conda environment: " + path);
                     selectCondaPathMenu.setEnabled(true);
-                    onUpdateCondaEnv();
+                    if (path != null)
+                        onUpdateCondaEnv();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

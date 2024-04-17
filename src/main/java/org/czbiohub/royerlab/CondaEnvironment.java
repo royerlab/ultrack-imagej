@@ -1,4 +1,4 @@
-package ultrack_binary;/*-
+package org.czbiohub.royerlab;/*-
  * #%L
  * Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
  * %%
