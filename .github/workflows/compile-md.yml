@@ -36,6 +36,7 @@ jobs:
         run: |
           cd ultrack-imagej
           sed -i '/^{%/d' README.md
+          sed -z -i 's/---.*---//g' README.md
           { cat header.md; cat README.md; cat citation.md;} > temp && mv temp README.md
 
 
