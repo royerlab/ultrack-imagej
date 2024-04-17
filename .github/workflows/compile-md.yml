@@ -56,6 +56,7 @@ jobs:
 
       - name: Commit
         run: |
+          cd ultrack-imagej
           if git diff --exit-code; then
             echo "No changes to commit."
             exit 0
