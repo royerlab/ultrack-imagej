@@ -1,21 +1,7 @@
 # Ultrack
 
 Large-scale cell tracking under segmentation uncertainty.
----
-mediawiki: Ultrack
-title: Large-scale cell tracking under segmentation uncertainty
-dev-status: Beta
-support-status: Active
-description: Cell tracking and segmentation software
-Creator: 
-  - Jordão Bragantini
-  - Ilan Theodoro
-Developer: 
-  - "@ilan-theodoro"
-  - "@JoOkuma"
-doi: 10.48550/arXiv.2308.04526
-categories: [Tracking]
----
+
 
 
 # Overview
