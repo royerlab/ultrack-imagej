@@ -1,4 +1,4 @@
-/*-
+package org.czbiohub.royerlab;/*-
  * #%L
  * Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
  * %%
@@ -19,15 +19,38 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import ij.plugin.PlugIn;
+import java.io.File;
 
-public class Ultrack_Plugin implements PlugIn {
+public class CondaEnvironment {
+    private final String path;
+    private final boolean foundUltrack;
 
-    @Override
-    public void run(String arg) {
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
-        //System.setProperty("prism.order", "sw");
-        MainApp.main(new String[]{});
+    public CondaEnvironment(String path) {
+        this.path = path;
+        this.foundUltrack = new File(path + "/bin/ultrack").exists();
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    @Override
+    public String toString() {
+        if (foundUltrack) {
+            return path + " [Ultrack found]";
+        } else {
+            return path + " [Ultrack not found]";
+        }
+    }
+
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof CondaEnvironment)) {
+            return false;
+        }
+        CondaEnvironment c = (CondaEnvironment) o;
+        return c.getPath().equals(this.getPath());
+    }
 }

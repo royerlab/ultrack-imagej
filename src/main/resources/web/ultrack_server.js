@@ -77,62 +77,63 @@ var jsConnector = {
         prev.experiment = JSON.parse(json)
         editor.set(prev)
     },
-    startServer: async function (status) {
-        connection_successfull = false;
+    startServer: function (status) {
+        function fetchConfigs() {
+            w = new Worker("connect_server.js");
+            w.onmessage = function (event) {
+                available_configs = event.data;
 
-        available_configs = null
+                hideLoadingOverlay();
+                document.getElementById('select-options').innerHTML = '';
 
-        while (!connection_successfull) {
-            await new Promise(r => setTimeout(r, 1000));
-            fetch('http://127.0.0.1:' + PORT + '/config/available')
-                .then(response => {
-                    // Check if the request was successful
-                    if (response.ok) {
-                        return response.json();
-                    }
-                })
-                .then(data => {
-                    available_configs = data;
+                Object.keys(available_configs).forEach(key => {
+                    link = available_configs[key]['link']
+                    config = available_configs[key]['config']
+                    human_name = available_configs[key]['human_name']
+                    var option = document.createElement("option");
+                    option.text = human_name;
+                    option.value = link;
+                    option.setAttribute('data-json', JSON.stringify(config));
+                    document.getElementById('select-options').add(option);
+                });
 
-                    hideLoadingOverlay();
-                    document.getElementById('select-options').innerHTML = '';
+                document.getElementById('select-options').addEventListener('change', function () {
+                    var selectedOption = this.options[this.selectedIndex];
+                    var json = selectedOption.getAttribute('data-json');
+                    editor.set(JSON.parse(json));
 
-                    Object.keys(available_configs).forEach(key => {
-                        link = available_configs[key]['link']
-                        config = available_configs[key]['config']
-                        human_name = available_configs[key]['human_name']
-                        var option = document.createElement("option");
-                        option.text = human_name;
-                        option.value = link;
-                        option.setAttribute('data-json', JSON.stringify(config));
-                        document.getElementById('select-options').add(option);
-                    });
+                    document.getElementById("runButton").disabled = true;
+                    document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
+                    document.getElementById("runButton").classList.add("btn-outline-primary")
 
-                    document.getElementById('select-options').addEventListener('change', function() {
-                        var selectedOption = this.options[this.selectedIndex];
-                        var json = selectedOption.getAttribute('data-json');
-                        editor.set(JSON.parse(json));
+                    document.getElementById("selectImages").classList.remove("btn-secondary")
+                    document.getElementById("selectImages").classList.add("btn-primary")
+                    document.getElementById("selectImages").disabled = false;
 
-                        document.getElementById("runButton").disabled = true;
-                        document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
-                        document.getElementById("runButton").classList.add("btn-outline-primary")
+                    document.getElementById("viewButton").disabled = true;
+                    document.getElementById("viewButton").classList.remove("btn-primary")
+                    document.getElementById("viewButton").classList.add("btn-outline-primary")
+                });
 
-                        document.getElementById("selectImages").classList.remove("btn-secondary")
-                        document.getElementById("selectImages").classList.add("btn-primary")
-                        document.getElementById("selectImages").disabled = false;
+                document.getElementById("select-options").dispatchEvent(new Event('change'));
 
-                        document.getElementById("viewButton").disabled = true;
-                        document.getElementById("viewButton").classList.remove("btn-primary")
-                        document.getElementById("viewButton").classList.add("btn-outline-primary")
-                    });
-
-                    document.getElementById("select-options").dispatchEvent(new Event('change'));
-
-                    connection_successfull = true;
-                })
+                connection_successfull = true;
+                w.terminate();
+                showBody();
+            };
+            w.onerror = function (event) {
+                // ignored
+            }
+            w.postMessage(PORT);
         }
-        showBody();
+
+        fetchConfigs();
+
     },
+    /**
+     * Update selected images.
+     * @param images - A list of paths to the selected images.
+     */
     updateSelectedImages: function (images) {
         try {
             json = editor.get();
@@ -148,11 +149,30 @@ var jsConnector = {
         } catch (e) {
         }
     },
+    /**
+     * Finish tracking.
+     *
+     * This function is called when the tracking process is finished.
+     */
     finishTracking: function () {
         hideLoadingOverlay();
         document.getElementById("viewButton").disabled = false;
         document.getElementById("viewButton").classList.replace("btn-outline-primary", "btn-primary")
         document.getElementById("runButton").classList.replace("btn-primary", "btn-secondary")
+    },
+    /**
+     * Close the connection.
+     * This function is called when the user closes the websocket connection.
+     */
+    closeConnection: function () {
+        hideLoadingOverlay();
+    },
+    /**
+     *
+     */
+    resetPage: function () {
+        hideLoadingOverlay();
+        stopServerFn();
     }
 };
 
