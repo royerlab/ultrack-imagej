@@ -38,6 +38,7 @@ jobs:
         run: |
           FILES=$(grep -oP '!\[.*?\]\(\K.*?(?=\))' "imagej.github.io/_pages/plugins/ultrack.md")
           echo "::set-output name=files::${FILES}"
+          echo "files=${FILES}" >> $GITHUB_OUTPUT
 
       - name: Copy media files
         run: |
@@ -45,8 +46,8 @@ jobs:
           do
             mkdir -p "ultrack-imagej/$(dirname "$FILE")"
             cp "imagej.github.io/$FILE" "ultrack-imagej/$FILE"
-            cp imagej.github.io/_pages/plugins/ultrack.md ultrack-imagej/README.md
           done
+          cp imagej.github.io/_pages/plugins/ultrack.md ultrack-imagej/README.md
 
       - name: Remove ImageJ includes
         run: |
