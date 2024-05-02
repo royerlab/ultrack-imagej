@@ -34,36 +34,10 @@ import java.util.prefs.Preferences;
 public class CondaEnvironmentFinder extends JDialog {
 
     private final Object lock = new Object();
-    private boolean cancelled = false;
-    private boolean actionCompleted = false;
-
-    public static void main(String[] args) {
-        try {
-            String path = openDialogToFindUltrack();
-            System.out.println("Selected conda environment: " + path);
-        } catch (InterruptedException e) {
-            JOptionPane.showMessageDialog(null, "Failed to find Ultrack: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
     private final JTextField condaPathField;
     private final JComboBox<CondaEnvironment> condaEnvComboBox;
-
-    public static String getCurrentCondaPath() {
-        Preferences prefs = Preferences.userNodeForPackage(CondaEnvironmentFinder.class);
-        return prefs.get("condaPath", null);
-    }
-
-    public static String getCurrentCondaEnv() {
-        Preferences prefs = Preferences.userNodeForPackage(CondaEnvironmentFinder.class);
-        return prefs.get("condaEnv", null);
-    }
-
-    private void buildGUI() {
-
-    }
-
-
-
+    private boolean cancelled = false;
+    private boolean actionCompleted = false;
     public CondaEnvironmentFinder() {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(600, 320);
@@ -203,6 +177,25 @@ public class CondaEnvironmentFinder extends JDialog {
         }
     }
 
+    public static void main(String[] args) {
+        try {
+            String path = openDialogToFindUltrack();
+            System.out.println("Selected conda environment: " + path);
+        } catch (InterruptedException e) {
+            JOptionPane.showMessageDialog(null, "Failed to find Ultrack: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static String getCurrentCondaPath() {
+        Preferences prefs = Preferences.userNodeForPackage(CondaEnvironmentFinder.class);
+        return prefs.get("condaPath", null);
+    }
+
+    public static String getCurrentCondaEnv() {
+        Preferences prefs = Preferences.userNodeForPackage(CondaEnvironmentFinder.class);
+        return prefs.get("condaEnv", null);
+    }
+
     /**
      * Check if a given path can be executed.
      *
@@ -234,7 +227,6 @@ public class CondaEnvironmentFinder extends JDialog {
             }
         }
     }
-
 
     /**
      * Check if a given path can be executed. It will not try to execute the path.
@@ -273,8 +265,6 @@ public class CondaEnvironmentFinder extends JDialog {
             return null;
         }
     }
-
-
 
     public static String openDialogToFindUltrack() throws InterruptedException {
         boolean ultrackAvailable = checkIfCanExecute("ultrack");
@@ -320,20 +310,6 @@ public class CondaEnvironmentFinder extends JDialog {
         }
     }
 
-    private boolean execute() {
-        synchronized (lock) {
-            while (!actionCompleted) {
-                try {
-                    lock.wait(); // Wait until the action is completed
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    System.out.println("Interrupted!");
-                }
-            }
-        }
-        return !cancelled;
-    }
-
     public static String getUltrackPath(String condaPath) {
         if (condaPath == null) {
             return "ultrack";
@@ -355,6 +331,24 @@ public class CondaEnvironmentFinder extends JDialog {
             ultrackPath = CondaEnvironmentFinder.getUltrackPath(condaPath);
             return ultrackPath;
         }
+    }
+
+    private void buildGUI() {
+
+    }
+
+    private boolean execute() {
+        synchronized (lock) {
+            while (!actionCompleted) {
+                try {
+                    lock.wait(); // Wait until the action is completed
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.out.println("Interrupted!");
+                }
+            }
+        }
+        return !cancelled;
     }
 
     private void updateCondaEnvironments(File condaPath) {

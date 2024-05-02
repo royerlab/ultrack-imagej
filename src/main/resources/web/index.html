@@ -24,13 +24,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Ultrack</title>
     <link href="bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<!--    <link rel="stylesheet" href="jsoneditor.min.css" type="text/css">-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/10.0.1/jsoneditor.min.css"/>
-    <link rel="stylesheet" href="styles.css" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!--    <link rel="stylesheet" href="jsoneditor.min.css" type="text/css">-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/10.0.1/jsoneditor.min.css" rel="stylesheet"/>
+    <link href="styles.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 
@@ -77,20 +77,24 @@
     <div class="container-fluid">
         <div>
             <div class="d-grid">
-                <button type="button" class="btn btn-success btn-lg btn-block" id="startServer" onclick="startServerFn();">Start Ultrack Server</button>
+                <button class="btn btn-success btn-lg btn-block" id="startServer" onclick="startServerFn();"
+                        type="button">Start Ultrack Server
+                </button>
                 <p></p>
             </div>
-<!--            <div class="alert alert-primary" role="alert" id="server-alert" hidden>-->
-<!--                <h4 class="alert-heading">Server Status</h4>-->
-<!--                <div id="server-status">Server is starting...</div>-->
-<!--            </div>-->
+            <!--            <div class="alert alert-primary" role="alert" id="server-alert" hidden>-->
+            <!--                <h4 class="alert-heading">Server Status</h4>-->
+            <!--                <div id="server-status">Server is starting...</div>-->
+            <!--            </div>-->
         </div>
-        <div id="jsoneditor-div" hidden>
+        <div hidden id="jsoneditor-div">
             <div class="d-grid">
                 <h5>Ultrack Configuration</h5>
                 <p>Configure the Ultrack parameters and run the tracking algorithm.</p>
             </div>
-            <div class="d-grid"> <hr class="mt-1 mb-1"/></div>
+            <div class="d-grid">
+                <hr class="mt-1 mb-1"/>
+            </div>
             <div class="d-grid text-right">
                 <div class="col-sm">
                     <p></p>
@@ -99,7 +103,7 @@
                 <div class="row">
                     <div class="col-sm text-right">
                         <div class="d-grid">
-                            <select class="form-select" aria-label="Default select example" id="select-options">
+                            <select aria-label="Default select example" class="form-select" id="select-options">
                             </select>
                         </div>
 
@@ -120,13 +124,17 @@
             <div class="container mt-4 d-grid">
                 <div class="row">
                     <div class="col px-1">
-                        <button type="button" class="btn btn-primary w-100 h-100" id="selectImages">Select Images</button>
+                        <button class="btn btn-primary w-100 h-100" id="selectImages" type="button">Select Images
+                        </button>
                     </div>
                     <div class="col px-1">
-                        <button type="button" class="btn btn-outline-primary w-100 h-100" id="runButton" disabled>Run</button>
+                        <button class="btn btn-outline-primary w-100 h-100" disabled id="runButton" type="button">Run
+                        </button>
                     </div>
                     <div class="col px-1">
-                        <button type="button" class="btn btn-outline-primary w-100 h-100" id="viewButton" disabled>View tracks</button>
+                        <button class="btn btn-outline-primary w-100 h-100" disabled id="viewButton" type="button">View
+                            tracks
+                        </button>
                     </div>
                 </div>
                 <p></p>

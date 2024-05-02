@@ -11,11 +11,11 @@ function do_fetch() {
         .then(data => {
             postMessage(data)
         }).catch(error => {
-            setTimeout("do_fetch()",1000);
-        })
+        setTimeout("do_fetch()", 1000);
+    })
 }
 
-onmessage = function(e) {
+onmessage = function (e) {
     PORT = e.data;
     do_fetch();
 };

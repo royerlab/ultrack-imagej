@@ -54,6 +54,7 @@ function stopServerFn() {
 function hideBody() {
     document.getElementById('jsoneditor-div').hidden = true;
 }
+
 function showBody() {
     document.getElementById('jsoneditor-div').hidden = false;
 }
@@ -196,7 +197,7 @@ document.getElementById("selectImages").addEventListener("click", function () {
 })
 
 // Function for run button
-document.getElementById('runButton').addEventListener('click', function() {
+document.getElementById('runButton').addEventListener('click', function () {
     var url = document.getElementById('select-options').options[document.getElementById('select-options').selectedIndex].value;
     var updatedJson = editor.get();
 
@@ -208,7 +209,7 @@ document.getElementById('runButton').addEventListener('click', function() {
     }
 });
 
-document.getElementById('viewButton').addEventListener('click', function() {
+document.getElementById('viewButton').addEventListener('click', function () {
     experimentJson = editor.get();
     id = experimentJson["experiment"]["id"]
 

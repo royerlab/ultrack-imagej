@@ -33,10 +33,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.swing.*;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -109,6 +106,7 @@ public class JavaConnector {
         String tempDir = System.getProperty("java.io.tmpdir");
         UUID uuid = UUID.randomUUID();
         String tempFile = tempDir + "/" + uuid + ".xml";
+        File file = new File(tempFile);
 
         // modify the xml Trackmate.Settings.ImageData.filename to the correct path
         SAXBuilder saxBuilder = new SAXBuilder();

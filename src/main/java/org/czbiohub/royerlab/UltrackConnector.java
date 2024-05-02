@@ -29,9 +29,8 @@ import java.util.function.Consumer;
 
 public abstract class UltrackConnector {
     private final String ultrackPath;
-    private Process currentProcess = null;
-
     private final Consumer<String> onLog;
+    private Process currentProcess = null;
     private int port = -1;
     private Thread serverListenerThread;
     private volatile boolean interruptionRequested = false;
@@ -39,6 +38,16 @@ public abstract class UltrackConnector {
     public UltrackConnector(String ultrackPath, Consumer<String> onLog) {
         this.ultrackPath = ultrackPath;
         this.onLog = onLog;
+    }
+
+    public static boolean isPortOpen(String host, int port, int timeout) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new java.net.InetSocketAddress(host, port), timeout);
+            return true; // Connection successful, port is open
+        } catch (IOException e) {
+            // Either timeout or unreachable or failed to connect.
+            return false; // Port is closed or not reachable
+        }
     }
 
     public void stopServer() {
@@ -123,16 +132,6 @@ public abstract class UltrackConnector {
         });
         this.serverListenerThread.start();
 
-    }
-
-    public static boolean isPortOpen(String host, int port, int timeout) {
-        try (Socket socket = new Socket()) {
-            socket.connect(new java.net.InetSocketAddress(host, port), timeout);
-            return true; // Connection successful, port is open
-        } catch (IOException e) {
-            // Either timeout or unreachable or failed to connect.
-            return false; // Port is closed or not reachable
-        }
     }
 
     public void connectToWebsocket(String url, String message, Consumer<String> onMessage, Consumer<String> onError, Consumer<String> onClose) {
