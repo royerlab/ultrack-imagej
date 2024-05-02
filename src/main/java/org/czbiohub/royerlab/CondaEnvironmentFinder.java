@@ -108,7 +108,7 @@ public class CondaEnvironmentFinder extends JDialog {
                 } else {
                     String path = ((CondaEnvironment) condaEnvComboBox.getSelectedItem()).getPath();
 
-                    if (checkIfCanExecute(path + "/bin/ultrack")) {
+                    if (checkIfCanExecute(path + "/bin/ultrack") || checkIfCanExecute(path + "/Scripts/ultrack")) {
                         JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Ultrack was found in the selected conda environment.", "Success", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Ultrack was not found in the selected conda environment.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -310,27 +310,26 @@ public class CondaEnvironmentFinder extends JDialog {
         }
     }
 
-    public static String getUltrackPath(String condaPath) {
-        if (condaPath == null) {
-            return "ultrack";
-        } else {
-            return condaPath + "/bin/ultrack";
-        }
-    }
-
     public static String getUltrackPath() throws InterruptedException {
         String condaPath = getCurrentCondaEnv();
-        String ultrackPath = getUltrackPath(condaPath);
-        if (checkIfCanExecute(ultrackPath)) {
-            return ultrackPath;
-        } else {
-            condaPath = CondaEnvironmentFinder.openDialogToFindUltrack();
-            if (condaPath == null) {
-                return null;
-            }
-            ultrackPath = CondaEnvironmentFinder.getUltrackPath(condaPath);
-            return ultrackPath;
+        ArrayList<String> possibleUltrackPaths = new ArrayList<>();
+        possibleUltrackPaths.add("ultrack");
+        if (condaPath != null) {
+            possibleUltrackPaths.add(condaPath + "/bin/ultrack");
+            possibleUltrackPaths.add(condaPath + "/Scripts/ultrack");
         }
+
+        for (String path : possibleUltrackPaths) {
+            if (checkIfCanExecute(path)) {
+                return path;
+            }
+        }
+
+        condaPath = CondaEnvironmentFinder.openDialogToFindUltrack();
+        if (condaPath == null) {
+            return null;
+        }
+        return CondaEnvironmentFinder.getUltrackPath();
     }
 
     private void buildGUI() {
