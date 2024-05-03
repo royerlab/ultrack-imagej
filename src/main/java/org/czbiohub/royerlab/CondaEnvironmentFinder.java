@@ -108,7 +108,8 @@ public class CondaEnvironmentFinder extends JDialog {
                 } else {
                     String path = ((CondaEnvironment) condaEnvComboBox.getSelectedItem()).getPath();
 
-                    if (checkIfCanExecute(path + "/bin/ultrack") || checkIfCanExecute(path + "/Scripts/ultrack")) {
+                    if (checkIfCanExecute(path + File.separator + "bin" + File.separator + "ultrack")
+                            || checkIfCanExecute(path + File.separator + "Scripts" + File.separator + "ultrack.exe")) {
                         JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Ultrack was found in the selected conda environment.", "Success", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Ultrack was not found in the selected conda environment.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -196,47 +197,9 @@ public class CondaEnvironmentFinder extends JDialog {
         return prefs.get("condaEnv", null);
     }
 
-    /**
-     * Check if a given path can be executed.
-     *
-     * @param program the path to check.
-     * @param strict if true, it will try to execute the path. If false, it will check if the path is executable.
-     * @return true if the path can be executed, false otherwise.
-     */
-    private static boolean checkIfCanExecute(String program, boolean strict) {
-        if (!strict) {
-            return new File(program).canExecute();
-        } else {
-            try {
-                String command;
-                String osName = System.getProperty("os.name").toLowerCase();
-                if (osName.contains("win")) {
-                    command = "where " + program;
-                } else {
-                    command = "which " + program;
-                }
 
-                // Execute the command
-                Process process = Runtime.getRuntime().exec(command);
-                int exitVal = process.waitFor();
-
-                // If the exit value is 0, the command found Conda in the path
-                return exitVal == 0;
-            } catch (IOException | InterruptedException e) {
-                return false;
-            }
-        }
-    }
-
-    /**
-     * Check if a given path can be executed. It will not try to execute the path.
-     *
-     * @param path the path to check.
-     * @return true if the path can be executed, false otherwise.
-     * @see #checkIfCanExecute(String, boolean) for a strict check if the path can be executed.
-     */
-    private static boolean checkIfCanExecute(String path) {
-        return checkIfCanExecute(path, true);
+    private static boolean checkIfCanExecute(String program) {
+        return new File(program).canExecute();
     }
 
     private static String tryFindingConda() {
@@ -315,8 +278,8 @@ public class CondaEnvironmentFinder extends JDialog {
         ArrayList<String> possibleUltrackPaths = new ArrayList<>();
         possibleUltrackPaths.add("ultrack");
         if (condaPath != null) {
-            possibleUltrackPaths.add(condaPath + "/bin/ultrack");
-            possibleUltrackPaths.add(condaPath + "/Scripts/ultrack");
+            possibleUltrackPaths.add(condaPath + File.separator + "bin" + File.separator + "ultrack");
+            possibleUltrackPaths.add(condaPath + File.separator + "Scripts" + File.separator + "ultrack.exe");
         }
 
         for (String path : possibleUltrackPaths) {
