@@ -29,6 +29,319 @@ function hideLoadingOverlay() {
     document.querySelector('.loading-overlay').style.display = 'none';
 }
 
+function validateAllForms() {
+    'use strict'
+
+    var allValid = true;
+
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.querySelectorAll('.needs-validation')
+
+    // Loop over them and prevent submission
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            let valid = form.checkValidity()
+            allValid = allValid && valid
+
+            var wrongField = form.querySelector('.is-invalid')
+            if (wrongField) {
+                wrongField.focus()
+            }
+        })
+
+    return allValid
+}
+
+(function () {
+    'use strict'
+
+
+    // build forms dinamically
+    let forms = {
+        "segmentation": {
+            "title": "Segmentation",
+            "fields": {
+                "threshold": {
+                    "label": "Threshold",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Threshold value for the segmentation algorithm",
+                    "validationMessage": "Please enter a valid threshold value (number)"
+                },
+                "min_area": {
+                    "label": "Min Area",
+                    "type": "number",
+                    "min": 0,
+                    "required": true,
+                    "tooltip": "Minimum area for detected objects",
+                    "validationMessage": "Please enter a valid minimum area value (number)"
+                },
+                "max_area": {
+                    "label": "Max Area",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Maximum area for detected objects",
+                    "validationMessage": "Please enter a valid maximum area value (number)"
+                },
+                "min_frontier": {
+                    "label": "Min Frontier",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Minimum frontier for detected objects",
+                    "validationMessage": "Please enter a valid minimum frontier value (number)"
+                },
+                "n_workers": {
+                    "label": "Number of Workers",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Number of workers to use for segmentation",
+                    "validationMessage": "Please enter a valid number of workers (> 1)"
+                }
+            }
+        },
+        "linking": {
+            "title": "Linking",
+            "fields": {
+                "distance_weight": {
+                    "label": "Distance Weight",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Distance weight for linking",
+                    "validationMessage": "Please enter a valid distance weight value (number)"
+                },
+                "n_workers": {
+                    "label": "Number of Workers",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Number of workers to use for linking",
+                    "validationMessage": "Please enter a valid number of workers (> 1)"
+                },
+                "max_neighbors": {
+                    "label": "Max Neighbors",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Maximum number of neighbors",
+                    "validationMessage": "Please enter a valid maximum number of neighbors (> 1)"
+                },
+            }
+        },
+        "tracking": {
+            "title": "Tracking",
+            "fields": {
+                "appear_weight": {
+                    "label": "Appear Weight",
+                    "type": "number",
+                    "max": "0.0",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Appear weight for tracking",
+                    "validationMessage": "Please enter a valid appear weight value (negative number)"
+                },
+                "disappear_weight": {
+                    "label": "Disappear Weight",
+                    "type": "number",
+                    "max": "0.0",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Disappear weight for tracking",
+                    "validationMessage": "Please enter a valid disappear weight value (negative number)"
+                },
+                "division_weight": {
+                    "label": "Division Weight",
+                    "type": "number",
+                    "max": "0.0",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Division weight for tracking",
+                    "validationMessage": "Please enter a valid division weight value (negative number)"
+                },
+                "window_size": {
+                    "label": "Window Size",
+                    "type": "number",
+                    "min": 1,
+                    "tooltip": "Window size for tracking",
+                    "validationMessage": "Please enter a valid window size value (number or blank)"
+                },
+                "overlap_size": {
+                    "label": "Overlap Size",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Overlap size for tracking",
+                    "validationMessage": "Please enter a valid overlap size value (number)"
+                },
+                "solution_gap": {
+                    "label": "Solution Gap",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Solution gap for tracking",
+                    "validationMessage": "Please enter a valid solution gap value (number)"
+                },
+            }
+        }
+    }
+
+    // generate bootstrap 5 tabs
+
+    let formContainer = document.getElementById('form-container')
+    let tabs = document.createElement('ul')
+    tabs.classList.add('nav', 'nav-tabs')
+    tabs.id = 'myTab'
+    tabs.role = 'tablist'
+    for (let key in forms) {
+        let tab = document.createElement('li')
+        tab.classList.add('nav-item')
+        let button = document.createElement('button')
+        button.classList.add('nav-link')
+        button.id = key + '-tab'
+        button.dataset.bsToggle = 'tab'
+        button.dataset.bsTarget = '#' + key
+        button.type = 'button'
+        button.role = 'tab'
+        button.ariaControls = key
+        button.ariaSelected = key === 'segmentation'
+        button.innerHTML = forms[key].title
+        tab.appendChild(button)
+        tabs.appendChild(tab)
+    }
+
+    formContainer.appendChild(tabs)
+
+    let tabContent = document.createElement('div')
+    tabContent.classList.add('tab-content')
+    tabContent.id = 'myTabContent'
+
+    for (let key in forms) {
+        let tabPane = document.createElement('div')
+        tabPane.classList.add('tab-pane', 'fade')
+        tabPane.id = key
+        tabPane.role = 'tabpanel'
+        tabPane.ariaLabelledby = key + '-tab'
+        // tabPane.hidden = key !== 'segmentation'
+
+        let form = document.createElement('form')
+        form.classList.add('needs-validation', 'was-validated')
+        form.noValidate = true
+
+        for (let field in forms[key].fields) {
+            let div = document.createElement('div')
+            div.classList.add('mb-3')
+
+            let label = document.createElement('label')
+            label.htmlFor = field
+            label.innerHTML = forms[key].fields[field].label
+
+            // <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Tooltip on right">
+            //   Tooltip on right
+            // </button>
+
+            let tooltip = document.createElement('button')
+            tooltip.type = 'button'
+            tooltip.classList.add('btn', 'btn-light', 'btn-sm', 'bi', 'bi-question-circle')
+            tooltip.dataset.bsToggle = 'tooltip'
+            tooltip.dataset.bsPlacement = 'right'
+            tooltip.title = forms[key].fields[field].tooltip
+
+            label.appendChild(tooltip)
+            div.appendChild(label)
+
+            let input = document.createElement('input')
+            input.classList.add('form-control', 'control-sm')
+            input.id = key + "_" + field
+            input.name = field
+            input.type = forms[key].fields[field].type
+            input.step = forms[key].fields[field].step || 1
+            input.min = forms[key].fields[field].min || ''
+            input.max = forms[key].fields[field].max || ''
+            input.required = forms[key].fields[field].required || false
+            div.appendChild(input)
+
+            let invalidFeedback = document.createElement('div')
+            invalidFeedback.classList.add('invalid-feedback')
+            invalidFeedback.innerHTML = forms[key].fields[field].validationMessage
+            div.appendChild(invalidFeedback)
+
+            form.appendChild(div)
+        }
+
+        tabPane.appendChild(form)
+        tabContent.appendChild(tabPane)
+    }
+
+    formContainer.appendChild(tabContent)
+
+
+})()
+
+function updateImageFields(json) {
+    let formImages = document.getElementById('form-images')
+    formImages.innerHTML = ''
+    const fields = {
+        "image_channel_or_path": "Image",
+        "edges_channel_or_path": "Edges Image",
+        "detection_channel_or_path": "Detection Image",
+        "labels_channel_or_path": "Labels Image"
+    }
+
+    for (const [field, description] of Object.entries(fields)) {
+        // check if field is in json
+        if (field in json && json[field] != null) {
+            let div = document.createElement('div')
+            div.classList.add('mb-3')
+
+            let label = document.createElement('label')
+            label.htmlFor = field
+            label.innerHTML = description
+
+            let input = document.createElement('input')
+            input.classList.add('form-control', 'control-sm')
+            input.id = field
+            input.name = field
+            input.type = 'text'
+            input.value = json[field]
+            input.readOnly = true
+            div.appendChild(label)
+            div.appendChild(input)
+
+            formImages.appendChild(div)
+        }
+    }
+
+}
+
+function updateFormWithJson(json) {
+    for (let key in json) {
+        let form = document.getElementById(key)
+        for (let field in json[key]) {
+            let input = form.querySelector('#' + key + "_" + field)
+            if (input) {
+                input.value = json[key][field]
+            }
+        }
+    }
+
+}
+
+function updateJsonWithForm(json) {
+    for (let key in json.experiment) {
+        let form = document.getElementById(key)
+        for (let field in json.experiment[key]) {
+            let input = form.querySelector('#' + key + "_" + field)
+            if (input) {
+                json.experiment[key][field] = input.value
+            }
+        }
+    }
+    return json
+}
 
 function startServerFn() {
     showLoadingOverlay();
@@ -77,6 +390,8 @@ var jsConnector = {
         prev = editor.get()
         prev.experiment = JSON.parse(json)
         editor.set(prev)
+        updateFormWithJson(JSON.parse(json)["config"])
+        updateImageFields(JSON.parse(json))
     },
     startServer: function (status) {
         function fetchConfigs() {
@@ -102,6 +417,9 @@ var jsConnector = {
                     var selectedOption = this.options[this.selectedIndex];
                     var json = selectedOption.getAttribute('data-json');
                     editor.set(JSON.parse(json));
+
+                    updateFormWithJson(JSON.parse(json)["experiment"]["config"])
+                    updateImageFields(JSON.parse(json)["experiment"])
 
                     document.getElementById("runButton").disabled = true;
                     document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
@@ -142,6 +460,7 @@ var jsConnector = {
             for (var i = 0; i < images_json.length; i++) {
                 json.experiment[images_json[i][0]] = images_json[i][1]
             }
+            updateImageFields(json.experiment)
             editor.set(json)
             document.getElementById("runButton").disabled = false;
             document.getElementById("runButton").classList.replace("btn-outline-primary", "btn-primary")
@@ -183,17 +502,19 @@ var options = {};
 var editor = new JSONEditor(container, options);
 
 document.getElementById("selectImages").addEventListener("click", function () {
-    json = editor.get();
-    image_options = ["image_channel_or_path", "edges_channel_or_path",
-        "detection_channel_or_path", "labels_channel_or_path"]
+    if (validateAllForms()) {
+        json = editor.get();
+        image_options = ["image_channel_or_path", "edges_channel_or_path",
+            "detection_channel_or_path", "labels_channel_or_path"]
 
-    available = []
-    for (var i = 0; i < image_options.length; i++) {
-        if (image_options[i] in json.experiment && json.experiment[image_options[i]] != null) {
-            available.push(image_options[i])
+        available = []
+        for (var i = 0; i < image_options.length; i++) {
+            if (image_options[i] in json.experiment && json.experiment[image_options[i]] != null) {
+                available.push(image_options[i])
+            }
         }
+        javaConnector.requestImages(JSON.stringify(available))
     }
-    javaConnector.requestImages(JSON.stringify(available))
 })
 
 // Function for run button

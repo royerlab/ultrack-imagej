@@ -95,13 +95,16 @@
             <div class="d-grid">
                 <hr class="mt-1 mb-1"/>
             </div>
-            <div class="d-grid text-right">
-                <div class="col-sm">
-                    <p></p>
-                    <h6>Select the desired Ultrack workflow</h6>
-                </div>
-                <div class="row">
-                    <div class="col-sm text-right">
+
+            <div class="d-grid" style="display: none">
+                <div id="jsoneditor" style="height: 200px; display: none"></div>
+            </div>
+
+            <div class="mt-4 d-grid">
+
+                <div class="mb-3">
+                    <div class="text-right">
+                        <h6>Select the desired Ultrack workflow</h6>
                         <div class="d-grid">
                             <select aria-label="Default select example" class="form-select" id="select-options">
                             </select>
@@ -110,119 +113,10 @@
                     </div>
 
                 </div>
-                <p></p>
 
-            </div>
-            <div class="d-grid">
-                <hr class="mt-1 mb-1"/>
-                <h6>Settings</h6>
-            </div>
-
-            <div class="d-grid">
-                <div id="jsoneditor" style="height: 200px"></div>
-            </div>
-
-            <div class="container mt-5">
-                <h2>Configuration Settings</h2>
-                <button class="btn btn-secondary mb-3" id="toggleButton">Show/Hide Form</button>
-                <div id="form-container" style="display: none">
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="segmentation-tab" data-bs-toggle="tab" data-bs-target="#segmentation" type="button" role="tab" aria-controls="segmentation" aria-selected="true">Segmentation</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="linking-tab" data-bs-toggle="tab" data-bs-target="#linking" type="button" role="tab" aria-controls="linking" aria-selected="false">Linking</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="solving-tab" data-bs-toggle="tab" data-bs-target="#solving" type="button" role="tab" aria-controls="solving" aria-selected="false">Solving</button>
-                        </li>
-                        <li class="nav-item ms-auto">
-                            <button class="nav-link btn btn-primary" type="button">Save Changes</button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="segmentation" role="tabpanel" aria-labelledby="segmentation-tab">
-                        <form>
-                            <div class="mb-3">
-                                <label for="threshold" class="form-label">Threshold</label>
-                                <input type="number" step="any" class="form-control" id="threshold" name="threshold" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="min_area" class="form-label">Min Area</label>
-                                <input type="number" class="form-control" id="min_area" name="min_area" min="0" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="max_area" class="form-label">Max Area</label>
-                                <input type="number" class="form-control" id="max_area" name="max_area" min="1" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="min_frontier" class="form-label">Min Frontier</label>
-                                <input type="number" step="any" class="form-control" id="min_frontier" name="min_frontier" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="n_workers" class="form-label">Number of Workers</label>
-                                <input type="number" class="form-control" id="n_workers" name="n_workers" min="1" required>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="tab-pane fade" id="linking" role="tabpanel" aria-labelledby="linking-tab">
-                        <form>
-                            <div class="mb-3">
-                            <label for="distance_weight" class="form-label">Distance Weight (real)</label>
-                            <input type="number" class="form-control" id="distance_weight" step="0.01">
-                        </div>
-                            <div class="mb-3">
-                                <label for="n_workers_linking" class="form-label">Number of Workers (int, -1, 0+)</label>
-                                <input type="number" class="form-control" id="n_workers_linking" min="1">
-                            </div>
-                            <div class="mb-3">
-                                <label for="max_neighbors" class="form-label">Max Neighbors (int, ≥1)</label>
-                                <input type="number" class="form-control" id="max_neighbors" min="1">
-                            </div>
-                            <div class="mb-3">
-                                <label for="max_distance" class="form-label">Max Distance (real)</label>
-                                <input type="number" class="form-control" id="max_distance" step="0.1">
-                            </div>
-                        </form>
-                    </div>
-                    <div class="tab-pane fade" id="solving" role="tabpanel" aria-labelledby="solving-tab">
-                        <form>
-                            <div class="mb-3">
-                                <label for="appear_weight" class="form-label">Appear Weight (real, <0)</label>
-                                <input type="number" class="form-control" id="appear_weight" max="0" step="0.01">
-                            </div>
-                            <div class="mb-3">
-                                <label for="disappear_weight" class="form-label">Disappear Weight (real, <0)</label>
-                                <input type="number" class="form-control" id="disappear_weight" max="0" step="0.01">
-                            </div>
-                            <div class="mb-3">
-                                <label for="division_weight" class="form-label">Division Weight (real, <0)</label>
-                                <input type="number" class="form-control" id="division_weight" max="0" step="0.01">
-                            </div>
-                            <div class="mb-3">
-                                <label for="window_size" class="form-label">Window Size (int)</label>
-                                <input type="number" class="form-control" id="window_size" min="1" value="null">
-                            </div>
-                            <div class="mb-3">
-                                <label for="overlap_size" class="form-label">Overlap Size (int)</label>
-                                <input type="number" class="form-control" id="overlap_size" min="1">
-                            </div>
-                            <div class="mb-3">
-                                <label for="solution_gap" class="form-label">Solution Gap (real)</label>
-                                <input type="number" class="form-control" id="solution_gap" step="0.01">
-                            </div>
-                            <div class="mb-3">
-                                <label for="time_limit" class="form-label">Time Limit (real)</label>
-                                <input type="number" class="form-control" id="time_limit" step="0.01">
-                            </div>
-                            <div class="mb-3">
-                                <label for="n_threads" class="form-label">Number of Threads (int, -1, 0+)</label>
-                                <input type="number" class="form-control" id="n_threads" min="-1">
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                </div>
+                <div id="form-images" class="mb-3"></div>
+                <button class="btn btn-primary mb-3" id="toggleButton">Show Advanced Settings</button>
+                <div id="form-container" style="display: none"></div>
             </div>
             <div class="container mt-4 d-grid">
                 <div class="row">
@@ -251,10 +145,10 @@
         var formContainer = document.querySelector('#form-container');
         if (formContainer.style.display === 'none') {
             formContainer.style.display = 'block';
-            this.textContent = 'Hide Form';
+            this.textContent = 'Hide Advanced Settings';
         } else {
             formContainer.style.display = 'none';
-            this.textContent = 'Show Form';
+            this.textContent = 'Show Advanced Settings';
         }
     });
 </script>
