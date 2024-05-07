@@ -33,7 +33,10 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -142,6 +145,20 @@ public class JavaConnector {
     @SuppressWarnings("unused")
     public void connectToUltrackWebsocket(String url, String message) {
         ultrackConnector.connectToWebsocket(url, message, this::onMessageConsumer, this::onErrorConsumer, this::onCloseConsumer);
+    }
+
+    public void openBrowserWithUrl(String url) {
+        System.out.println("Opening " + url);
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    Desktop.getDesktop().browse(new URI(url));
+                } catch (IOException | URISyntaxException e) {
+                    System.err.println(e.getMessage());
+                }
+            });
+        }
+
     }
 
     private void onMessageConsumer(String response) {
