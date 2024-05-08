@@ -185,6 +185,14 @@ function validateAllForms() {
                     "tooltip": "Solution gap for tracking",
                     "validationMessage": "Please enter a valid solution gap value (number)"
                 },
+                "n_threads": {
+                    "label": "Number of Threads",
+                    "type": "number",
+                    "min": -1,
+                    "required": true,
+                    "tooltip": "Number of Threads to use for tracking. -1 for all available threads.",
+                    "validationMessage": "Please enter a valid number of threads"
+                }
             }
         }
     }
@@ -312,6 +320,7 @@ function updateImageFields(json) {
             div.appendChild(input)
 
             formImages.appendChild(div)
+            _json.experiment[field] = json[field]
         }
     }
 
@@ -320,6 +329,9 @@ function updateImageFields(json) {
 function updateFormWithJson(json) {
     for (let key in json) {
         let form = document.getElementById(key)
+        if (!form) {
+            continue
+        }
         for (let field in json[key]) {
             let input = form.querySelector('#' + key + "_" + field)
             if (input) {
@@ -331,16 +343,37 @@ function updateFormWithJson(json) {
 }
 
 function updateJsonWithForm(json) {
-    for (let key in json.experiment) {
+    for (let key in json.experiment.config) {
         let form = document.getElementById(key)
-        for (let field in json.experiment[key]) {
+        if (!form) {
+            continue
+        }
+        for (let field in json.experiment.config[key]) {
             let input = form.querySelector('#' + key + "_" + field)
             if (input) {
-                json.experiment[key][field] = input.value
+                if (input.value === "") {
+                    json.experiment.config[key][field] = null
+                } else {
+                    json.experiment.config[key][field] = input.value
+                }
             }
         }
     }
     return json
+}
+
+var _json
+
+function get_json() {
+    json = _json
+    json = updateJsonWithForm(json)
+    return json
+}
+
+function set_json(json) {
+    _json = json
+    updateFormWithJson(json.experiment["config"])
+    updateImageFields(json.experiment)
 }
 
 function startServerFn() {
@@ -387,11 +420,9 @@ var jsConnector = {
         hideLoadingOverlay();
     },
     updateJson: function (json) {
-        prev = editor.get()
+        prev = get_json()
         prev.experiment = JSON.parse(json)
-        editor.set(prev)
-        updateFormWithJson(JSON.parse(json)["config"])
-        updateImageFields(JSON.parse(json))
+        set_json(prev)
     },
     startServer: function (status) {
         function fetchConfigs() {
@@ -416,10 +447,7 @@ var jsConnector = {
                 document.getElementById('select-options').addEventListener('change', function () {
                     var selectedOption = this.options[this.selectedIndex];
                     var json = selectedOption.getAttribute('data-json');
-                    editor.set(JSON.parse(json));
-
-                    updateFormWithJson(JSON.parse(json)["experiment"]["config"])
-                    updateImageFields(JSON.parse(json)["experiment"])
+                    set_json(JSON.parse(json))
 
                     document.getElementById("runButton").disabled = true;
                     document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
@@ -455,13 +483,12 @@ var jsConnector = {
      */
     updateSelectedImages: function (images) {
         try {
-            json = editor.get();
+            json = get_json()
             images_json = JSON.parse(images)
             for (var i = 0; i < images_json.length; i++) {
                 json.experiment[images_json[i][0]] = images_json[i][1]
             }
-            updateImageFields(json.experiment)
-            editor.set(json)
+            set_json(json)
             document.getElementById("runButton").disabled = false;
             document.getElementById("runButton").classList.replace("btn-outline-primary", "btn-primary")
             document.getElementById("selectImages").classList.replace("btn-primary", "btn-secondary")
@@ -496,14 +523,9 @@ var jsConnector = {
     }
 };
 
-// Initialize JSONEditor
-var container = document.getElementById("jsoneditor");
-var options = {};
-var editor = new JSONEditor(container, options);
-
 document.getElementById("selectImages").addEventListener("click", function () {
     if (validateAllForms()) {
-        json = editor.get();
+        json = get_json();
         image_options = ["image_channel_or_path", "edges_channel_or_path",
             "detection_channel_or_path", "labels_channel_or_path"]
 
@@ -520,7 +542,7 @@ document.getElementById("selectImages").addEventListener("click", function () {
 // Function for run button
 document.getElementById('runButton').addEventListener('click', function () {
     var url = document.getElementById('select-options').options[document.getElementById('select-options').selectedIndex].value;
-    var updatedJson = editor.get();
+    var updatedJson = get_json();
 
     try {
         javaConnector.connectToUltrackWebsocket(url, JSON.stringify(updatedJson))
@@ -531,7 +553,7 @@ document.getElementById('runButton').addEventListener('click', function () {
 });
 
 document.getElementById('viewButton').addEventListener('click', function () {
-    experimentJson = editor.get();
+    experimentJson = get_json();
     id = experimentJson["experiment"]["id"]
 
     fetch('http://127.0.0.1:' + PORT + '/experiment/' + id + '/trackmate')
