@@ -448,25 +448,36 @@ var jsConnector = {
         prev.experiment = JSON.parse(json)
         set_json(prev)
     },
-    startServer: function (status) {
-        function fetchConfigs() {
-            w = new Worker("connect_server.js");
-            w.onmessage = function (event) {
-                available_configs = event.data;
+    startServer: async function (status) {
+        connection_successfull = false;
 
-                hideLoadingOverlay();
-                document.getElementById('select-options').innerHTML = '';
+        available_configs = null
 
-                Object.keys(available_configs).forEach(key => {
-                    link = available_configs[key]['link']
-                    config = available_configs[key]['config']
-                    human_name = available_configs[key]['human_name']
-                    var option = document.createElement("option");
-                    option.text = human_name;
-                    option.value = link;
-                    option.setAttribute('data-json', JSON.stringify(config));
-                    document.getElementById('select-options').add(option);
-                });
+        while (!connection_successfull) {
+            await new Promise(r => setTimeout(r, 1000));
+            fetch('http://127.0.0.1:' + PORT + '/config/available')
+                .then(response => {
+                    // Check if the request was successful
+                    if (response.ok) {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    available_configs = data;
+
+                    hideLoadingOverlay();
+                    document.getElementById('select-options').innerHTML = '';
+
+                    Object.keys(available_configs).forEach(key => {
+                        link = available_configs[key]['link']
+                        config = available_configs[key]['config']
+                        human_name = available_configs[key]['human_name']
+                        var option = document.createElement("option");
+                        option.text = human_name;
+                        option.value = link;
+                        option.setAttribute('data-json', JSON.stringify(config));
+                        document.getElementById('select-options').add(option);
+                    });
 
                 document.getElementById('select-options').addEventListener('change', function () {
                     var selectedOption = this.options[this.selectedIndex];
@@ -495,18 +506,10 @@ var jsConnector = {
 
                 document.getElementById("select-options").dispatchEvent(new Event('change'));
 
-                connection_successfull = true;
-                w.terminate();
-                showBody();
-            };
-            w.onerror = function (event) {
-                // ignored
-            }
-            w.postMessage(PORT);
+                    connection_successfull = true;
+                })
         }
-
-        fetchConfigs();
-
+        showBody();
     },
     /**
      * Update selected images.
