@@ -524,6 +524,12 @@ function updateImageFields(json) {
 
     for (const [field, description] of Object.entries(fields)) {
         // check if field is in json
+
+        if ((json[field] === undefined || json[field] == null) && _json !== undefined &&
+            _json.experiment !== undefined && _json.experiment[field] !== undefined) {
+            json[field] = _json.experiment[field]
+        }
+
         if (field in json && json[field] != null) {
             let div = document.createElement('div')
             div.classList.add('mb-3')
@@ -543,7 +549,6 @@ function updateImageFields(json) {
             div.appendChild(input)
 
             formImages.appendChild(div)
-            _json.experiment[field] = json[field]
         }
     }
 
@@ -660,18 +665,20 @@ function updateAdditionalForms(json) {
 }
 
 var _json
+var _original_json
 
 function get_json() {
     json = _json
     json = updateJsonWithForm(json)
-    return json
+    //return a copy of the json
+    return JSON.parse(JSON.stringify(json))
 }
 
 function set_json(json) {
-    _json = json
     updateFormWithJson(json.experiment["config"])
     updateImageFields(json.experiment)
     updateAdditionalForms(json)
+    _json = json
 }
 
 function startServerFn() {
@@ -746,6 +753,7 @@ var jsConnector = {
                     var selectedOption = this.options[this.selectedIndex];
                     var json = selectedOption.getAttribute('data-json');
                     set_json(JSON.parse(json))
+                    _original_json = JSON.parse(json)
 
                     document.getElementById("runButton").disabled = true;
                     document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
@@ -788,9 +796,10 @@ var jsConnector = {
             }
             set_json(json)
             document.getElementById("runButton").disabled = false;
+            document.getElementById("selectImages").disabled = false;
+            document.getElementById("viewButton").disabled = true;
             document.getElementById("runButton").classList.replace("btn-outline-primary", "btn-primary")
             document.getElementById("selectImages").classList.replace("btn-primary", "btn-secondary")
-            document.getElementById("selectImages").disabled = true;
         } catch (e) {
         }
     },
@@ -802,6 +811,8 @@ var jsConnector = {
     finishTracking: function () {
         hideLoadingOverlay();
         document.getElementById("viewButton").disabled = false;
+        document.getElementById("runButton").disabled = false;
+        document.getElementById("selectImages").disabled = false;
         document.getElementById("viewButton").classList.replace("btn-outline-primary", "btn-primary")
         document.getElementById("runButton").classList.replace("btn-primary", "btn-secondary")
     },
@@ -823,7 +834,7 @@ var jsConnector = {
 
 document.getElementById("selectImages").addEventListener("click", function () {
     if (validateAllForms()) {
-        json = get_json();
+        json = _original_json
         image_options = ["image_channel_or_path", "edges_channel_or_path",
             "detection_channel_or_path", "labels_channel_or_path"]
 
