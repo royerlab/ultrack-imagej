@@ -39,14 +39,6 @@ public abstract class AppMenu extends JMenuBar {
 
     public JMenuItem exitMenu;
 
-    private static String setCondaEnv() {
-        String currentCondaEnv = CondaEnvironmentFinder.getCurrentCondaEnv();
-        if (currentCondaEnv == null) {
-            currentCondaEnv = "No conda env selected";
-        }
-        return currentCondaEnv;
-    }
-
     /**
      * Constructor for the org.czbiohub.royerlab.AppMenu class.
      * <p>
@@ -108,6 +100,14 @@ public abstract class AppMenu extends JMenuBar {
         this.add(fileMenu);
         this.add(envMenu);
         this.add(helpMenu);
+    }
+
+    private static String setCondaEnv() {
+        String currentCondaEnv = CondaEnvironmentFinder.getCurrentCondaEnv();
+        if (currentCondaEnv == null) {
+            currentCondaEnv = "No conda env selected";
+        }
+        return currentCondaEnv;
     }
 
     public abstract void onExit();

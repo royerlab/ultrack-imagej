@@ -27,7 +27,8 @@ public class CondaEnvironment {
 
     public CondaEnvironment(String path) {
         this.path = path;
-        this.foundUltrack = new File(path + "/bin/ultrack").exists();
+        this.foundUltrack = new File(path + File.separator + "bin" + File.separator + "ultrack").canExecute()
+                || new File(path + File.separator + "Scripts" + File.separator + "ultrack.exe").canExecute();
     }
 
     public String getPath() {

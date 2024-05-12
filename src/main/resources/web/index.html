@@ -24,13 +24,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Ultrack</title>
     <link href="bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<!--    <link rel="stylesheet" href="jsoneditor.min.css" type="text/css">-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/10.0.1/jsoneditor.min.css"/>
-    <link rel="stylesheet" href="styles.css" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!--    <link rel="stylesheet" href="jsoneditor.min.css" type="text/css">-->
+<!--    <link href="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/10.0.1/jsoneditor.min.css" rel="stylesheet"/>-->
+    <link href="styles.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 
@@ -54,17 +54,17 @@
     <div class="container-fluid">
         <h4>Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps</h4>
         <div class="mx-auto">
-            <a href="https://github.com/royerlab/ultrack" target="_blank">
+            <a href="https://github.com/royerlab/ultrack" target="_blank" class="backend-redirect">
                 <i class="bi bi-github"></i>
                 GitHub
             </a>
             &nbsp;
-            <a href="https://arxiv.org/abs/2308.04526" target="_blank">
+            <a href="https://arxiv.org/abs/2308.04526" target="_blank" class="backend-redirect">
                 <i class="bi bi-file-earmark-pdf-fill"></i>
                 ArXiV Paper
             </a>
             &nbsp;
-            <a href="https://royerlab.github.io/ultrack/" target="_blank">
+            <a href="https://royerlab.github.io/ultrack/" target="_blank" class="backend-redirect">
                 <i class="bi bi-book-fill"></i>
                 Documentation
             </a>
@@ -77,56 +77,67 @@
     <div class="container-fluid">
         <div>
             <div class="d-grid">
-                <button type="button" class="btn btn-success btn-lg btn-block" id="startServer" onclick="startServerFn();">Start Ultrack Server</button>
+                <button class="btn btn-success btn-lg btn-block" id="startServer" onclick="startServerFn();"
+                        type="button">Start Ultrack Server
+                </button>
                 <p></p>
             </div>
-<!--            <div class="alert alert-primary" role="alert" id="server-alert" hidden>-->
-<!--                <h4 class="alert-heading">Server Status</h4>-->
-<!--                <div id="server-status">Server is starting...</div>-->
-<!--            </div>-->
         </div>
-        <div id="jsoneditor-div" hidden>
+        <div hidden id="jsoneditor-div">
             <div class="d-grid">
                 <h5>Ultrack Configuration</h5>
                 <p>Configure the Ultrack parameters and run the tracking algorithm.</p>
             </div>
-            <div class="d-grid"> <hr class="mt-1 mb-1"/></div>
-            <div class="d-grid text-right">
-                <div class="col-sm">
-                    <p></p>
-                    <h6>Select the desired Ultrack workflow</h6>
-                </div>
-                <div class="row">
-                    <div class="col-sm text-right">
+            <div class="d-grid">
+                <hr class="mt-1 mb-1"/>
+            </div>
+
+            <div class="mt-4 d-grid">
+
+                <div class="mb-3">
+                    <div class="text-right">
+                        <h6>Select the desired Ultrack workflow</h6>
                         <div class="d-grid">
-                            <select class="form-select" aria-label="Default select example" id="select-options">
+                            <select aria-label="Default select example" class="form-select" id="select-options">
                             </select>
                         </div>
 
                     </div>
 
                 </div>
-                <p></p>
 
-            </div>
-            <div class="d-grid">
-                <hr class="mt-1 mb-1"/>
-                <h6>Settings</h6>
-            </div>
-
-            <div class="d-grid">
-                <div id="jsoneditor" style="height: 200px"></div>
+                <div id="form-images" class="mb-3"></div>
+                <button class="btn btn-primary mb-3" id="toggleButton">Show Advanced Settings</button>
+                <div id="form-container" style="display: none"></div>
             </div>
             <div class="container mt-4 d-grid">
                 <div class="row">
                     <div class="col px-1">
-                        <button type="button" class="btn btn-primary w-100 h-100" id="selectImages">Select Images</button>
+                        <button class="btn btn-primary w-100 h-100" id="selectImages" type="button">Select Images
+                        </button>
                     </div>
                     <div class="col px-1">
-                        <button type="button" class="btn btn-outline-primary w-100 h-100" id="runButton" disabled>Run</button>
+                        <div class="btn-group w-100 h-100">
+                            <button type="button" class="btn btn-outline-primary w-100 h-100" disabled id="runButton">Run</button>
+                            <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" disabled id="runButtonDropdown">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#">Run entire workflow (default)</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Run workflow from segmentation</a></li>
+                                <li><a class="dropdown-item" href="#">Run workflow from linking</a></li>
+                                <li><a class="dropdown-item" href="#">Run workflow from solving</a></li>
+                            </ul>
+                        </div>
+
+<!--                        <button class="btn btn-outline-primary w-100 h-100" disabled id="runButton" type="button">Run-->
+<!--                        </button>-->
                     </div>
                     <div class="col px-1">
-                        <button type="button" class="btn btn-outline-primary w-100 h-100" id="viewButton" disabled>View tracks</button>
+                        <button class="btn btn-outline-primary w-100 h-100" disabled id="viewButton" type="button">View
+                            tracks
+                        </button>
                     </div>
                 </div>
                 <p></p>
@@ -135,9 +146,274 @@
         </div>
     </div>
 </div>
+<script>
+    document.getElementById('toggleButton').addEventListener('click', function() {
+        var formContainer = document.querySelector('#form-container');
+        if (formContainer.style.display === 'none') {
+            formContainer.style.display = 'block';
+            this.textContent = 'Hide Advanced Settings';
+        } else {
+            formContainer.style.display = 'none';
+            this.textContent = 'Show Advanced Settings';
+        }
+    });
+
+    (function () {
+        let links = document.getElementsByClassName('backend-redirect')
+
+        for (let i = 0; i < links.length; i++) {
+            const link = links[i];
+
+            // Example action: Adding an event listener to each link
+            link.addEventListener('click', function(event) {
+                event.preventDefault();  // Prevent the default link behavior
+                javaConnector.openBrowserWithUrl(link.href)
+            });
+        }
+    })()
+</script>
+<script type="application/json" id="forms.json">
+    {
+        "segmentation": {
+            "title": "Segmentation",
+            "fields": {
+                "threshold": {
+                    "label": "Threshold",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Threshold value for the segmentation algorithm",
+                    "validationMessage": "Please enter a valid threshold value (number)"
+                },
+                "min_area": {
+                    "label": "Min Area",
+                    "type": "number",
+                    "min": 0,
+                    "required": true,
+                    "tooltip": "Minimum area for detected objects",
+                    "validationMessage": "Please enter a valid minimum area value (number)"
+                },
+                "max_area": {
+                    "label": "Max Area",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Maximum area for detected objects",
+                    "validationMessage": "Please enter a valid maximum area value (number)"
+                },
+                "min_frontier": {
+                    "label": "Min Frontier",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Minimum frontier for detected objects",
+                    "validationMessage": "Please enter a valid minimum frontier value (number)"
+                },
+                "n_workers": {
+                    "label": "Number of Workers",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Number of workers to use for segmentation",
+                    "validationMessage": "Please enter a valid number of workers (> 1)"
+                }
+            }
+        },
+        "linking": {
+            "title": "Linking",
+            "fields": {
+                "distance_weight": {
+                    "label": "Distance Weight",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Distance weight for linking",
+                    "validationMessage": "Please enter a valid distance weight value (number)"
+                },
+                "n_workers": {
+                    "label": "Number of Workers",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Number of workers to use for linking",
+                    "validationMessage": "Please enter a valid number of workers (> 1)"
+                },
+                "max_neighbors": {
+                    "label": "Max Neighbors",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Maximum number of neighbors",
+                    "validationMessage": "Please enter a valid maximum number of neighbors (> 1)"
+                }
+            }
+        },
+        "tracking": {
+            "title": "Tracking",
+            "fields": {
+                "appear_weight": {
+                    "label": "Appear Weight",
+                    "type": "number",
+                    "max": "0.0",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Appear weight for tracking",
+                    "validationMessage": "Please enter a valid appear weight value (negative number)"
+                },
+                "disappear_weight": {
+                    "label": "Disappear Weight",
+                    "type": "number",
+                    "max": "0.0",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Disappear weight for tracking",
+                    "validationMessage": "Please enter a valid disappear weight value (negative number)"
+                },
+                "division_weight": {
+                    "label": "Division Weight",
+                    "type": "number",
+                    "max": "0.0",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Division weight for tracking",
+                    "validationMessage": "Please enter a valid division weight value (negative number)"
+                },
+                "window_size": {
+                    "label": "Window Size",
+                    "type": "number",
+                    "min": 1,
+                    "tooltip": "Window size for tracking",
+                    "validationMessage": "Please enter a valid window size value (number or blank)"
+                },
+                "overlap_size": {
+                    "label": "Overlap Size",
+                    "type": "number",
+                    "min": 1,
+                    "required": true,
+                    "tooltip": "Overlap size for tracking",
+                    "validationMessage": "Please enter a valid overlap size value (number)"
+                },
+                "solution_gap": {
+                    "label": "Solution Gap",
+                    "type": "number",
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Solution gap for tracking",
+                    "validationMessage": "Please enter a valid solution gap value (number)"
+                },
+                "n_threads": {
+                    "label": "Number of Threads",
+                    "type": "number",
+                    "min": -1,
+                    "required": true,
+                    "tooltip": "Number of Threads to use for tracking. -1 for all available threads.",
+                    "validationMessage": "Please enter a valid number of threads"
+                }
+            }
+        }
+    }
+</script>
+<script type="application/json" id="additional_options.json">
+    {
+        "label_to_edges_kwargs": {
+            "subform": true,
+            "title": "Label to Edges",
+            "fields": {
+                "sigma": {
+                    "label": "Sigma",
+                    "type": "number",
+                    "min": 0.0,
+                    "step": "any",
+                    "tooltip": "Edges smoothing parameter (gaussian blur), edges aren't smoothed if not provided",
+                    "validationMessage": "Please enter a valid sigma value (number or blank)"
+                }
+            }
+        },
+        "detect_foreground_kwargs": {
+            "subform": true,
+            "title": "Detect Foreground",
+            "fields": {
+                "sigma": {
+                    "label": "Sigma",
+                    "type": "number",
+                    "default": 15.0,
+                    "min": 0.0,
+                    "step": "any",
+                    "required": true,
+                    "tooltip": "Sigma used to estimate background, it will be divided by voxel size",
+                    "validationMessage": "Please enter a valid sigma value (number)"
+                },
+                "remove_hist_mode": {
+                    "label": "Remove Histogram Mode",
+                    "type": "checkbox",
+                    "default": "false",
+                    "required": false,
+                    "tooltip": "Removes histogram mode before computing otsu threshold, useful when background regions are being detected",
+                    "validationMessage": "Please enter a valid remove histogram mode value (boolean)"
+                },
+                "min_foreground": {
+                    "label": "Min Foreground",
+                    "type": "number",
+                    "min": 0.0,
+                    "step": "any",
+                    "default": 0.0,
+                    "required": true,
+                    "tooltip": "Minimum value of foreground pixels after background subtraction and smoothing",
+                    "validationMessage": "Please enter a valid min foreground value (number)"
+                },
+                "channel_axis": {
+                    "label": "Channel Axis",
+                    "type": "number",
+                    "min": 0,
+                    "max": 4,
+                    "required": false,
+                    "tooltip": "When provided it will be used to compute the foreground mask for each channel separately and merge them",
+                    "validationMessage": "Please enter a valid channel axis value (number or blank)"
+
+                }
+            }
+        },
+        "robust_invert_kwargs": {
+            "subform": true,
+            "title": "Robust Invert",
+            "fields": {
+                "sigma": {
+                    "label": "Sigma",
+                    "type": "number",
+                    "min": 0.0,
+                    "default": 1.0,
+                    "required": true,
+                    "step": "any",
+                    "tooltip": "Sigma used to smooth the image",
+                    "validationMessage": "Please enter a valid sigma value (number)"
+                },
+                "lower_quantile": {
+                    "label": "Lower Quantile",
+                    "type": "number",
+                    "max": 1.0,
+                    "min": 0.0,
+                    "step": "any",
+                    "required": false,
+                    "tooltip": "Lower quantile used to clip the intensities, minimum used when None",
+                    "validationMessage": "Please enter a valid lower quantile value (number or blank)"
+                },
+                "upper_quantile": {
+                    "label": "Upper Quantile",
+                    "type": "number",
+                    "max": 1.0,
+                    "min": 0.0,
+                    "step": "any",
+                    "required": false,
+                    "tooltip": "Upper quantile used to clip the intensities, maximum used when None",
+                    "validationMessage": "Please enter a valid upper quantile value (number or blank)"
+                }
+            }
+        }
+    }
+</script>
 <script src="bootstrap.bundle.min.js"></script>
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jsoneditor/10.0.1/jsoneditor.min.js" integrity="sha512-QoEa+2J/Sie4bjZNs546qH2o7pK246K7bPYqMOkIU2J7Hdj6axTsPqYbbr0SgQ7iSAomOSa922z+z6yNbECGJQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>-->
-<script src="jsoneditor.min.js"></script>
+<!--<script src="jsoneditor.min.js"></script>-->
 <script src="ultrack_server.js"></script>
 </body>
 </html>

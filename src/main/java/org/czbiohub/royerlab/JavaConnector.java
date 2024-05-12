@@ -33,10 +33,10 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.swing.*;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStream;
+import java.awt.*;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -109,6 +109,7 @@ public class JavaConnector {
         String tempDir = System.getProperty("java.io.tmpdir");
         UUID uuid = UUID.randomUUID();
         String tempFile = tempDir + "/" + uuid + ".xml";
+        File file = new File(tempFile);
 
         // modify the xml Trackmate.Settings.ImageData.filename to the correct path
         SAXBuilder saxBuilder = new SAXBuilder();
@@ -144,6 +145,20 @@ public class JavaConnector {
     @SuppressWarnings("unused")
     public void connectToUltrackWebsocket(String url, String message) {
         ultrackConnector.connectToWebsocket(url, message, this::onMessageConsumer, this::onErrorConsumer, this::onCloseConsumer);
+    }
+
+    public void openBrowserWithUrl(String url) {
+        System.out.println("Opening " + url);
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    Desktop.getDesktop().browse(new URI(url));
+                } catch (IOException | URISyntaxException e) {
+                    System.err.println(e.getMessage());
+                }
+            });
+        }
+
     }
 
     private void onMessageConsumer(String response) {
