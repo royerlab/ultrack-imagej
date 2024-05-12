@@ -52,247 +52,22 @@ function validateAllForms() {
     return allValid
 }
 
+function getJsonFromFile(file) {
+    var jsonText = document.getElementById(file).textContent;
+
+    console.log(jsonText)
+    // Parse the JSON text into an object
+    var data = JSON.parse(jsonText);
+
+    return data;
+}
+
 (function () {
     'use strict'
 
+    let additional_options = getJsonFromFile('additional_options.json')
 
-    let additional_options = {
-        "label_to_edges_kwargs": {
-            "subform": true,
-            "title": "Label to Edges",
-            "fields": {
-                "sigma": {
-                    "label": "Sigma",
-                    "type": "number",
-                    "min": 0.0,
-                    "step": "any",
-                    "tooltip": "Edges smoothing parameter (gaussian blur), edges aren't smoothed if not provided",
-                    "validationMessage": "Please enter a valid sigma value (number or blank)"
-                }
-            }
-        },
-        "detect_foreground_kwargs": {
-            "subform": true,
-            "title": "Detect Foreground",
-            "fields": {
-                "sigma": {
-                    "label": "Sigma",
-                    "type": "number",
-                    "default": 15.0,
-                    "min": 0.0,
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Sigma used to estimate background, it will be divided by voxel size",
-                    "validationMessage": "Please enter a valid sigma value (number)"
-                },
-                "remove_hist_mode": {
-                    "label": "Remove Histogram Mode",
-                    "type": "checkbox",
-                    "default": "false",
-                    "required": false,
-                    "tooltip": "Removes histogram mode before computing otsu threshold, useful when background regions are being detected",
-                    "validationMessage": "Please enter a valid remove histogram mode value (boolean)"
-                },
-                "min_foreground": {
-                    "label": "Min Foreground",
-                    "type": "number",
-                    "min": 0.0,
-                    "step": "any",
-                    "default": 0.0,
-                    "required": true,
-                    "tooltip": "Minimum value of foreground pixels after background subtraction and smoothing",
-                    "validationMessage": "Please enter a valid min foreground value (number)"
-                },
-                "channel_axis": {
-                    "label": "Channel Axis",
-                    "type": "number",
-                    "min": 0,
-                    "max": 4,
-                    "required": false,
-                    "tooltip": "When provided it will be used to compute the foreground mask for each channel separately and merge them",
-                    "validationMessage": "Please enter a valid channel axis value (number or blank)"
-
-                }
-            }
-        },
-        "robust_invert_kwargs": {
-            "subform": true,
-            "title": "Robust Invert",
-            "fields": {
-                "sigma": {
-                    "label": "Sigma",
-                    "type": "number",
-                    "min": 0.0,
-                    "default": 1.0,
-                    "required": true,
-                    "step": "any",
-                    "tooltip": "Sigma used to smooth the image",
-                    "validationMessage": "Please enter a valid sigma value (number)"
-                },
-                "lower_quantile": {
-                    "label": "Lower Quantile",
-                    "type": "number",
-                    "max": 1.0,
-                    "min": 0.0,
-                    "step": "any",
-                    "required": false,
-                    "tooltip": "Lower quantile used to clip the intensities, minimum used when None",
-                    "validationMessage": "Please enter a valid lower quantile value (number or blank)"
-                },
-                "upper_quantile": {
-                    "label": "Upper Quantile",
-                    "type": "number",
-                    "max": 1.0,
-                    "min": 0.0,
-                    "step": "any",
-                    "required": false,
-                    "tooltip": "Upper quantile used to clip the intensities, maximum used when None",
-                    "validationMessage": "Please enter a valid upper quantile value (number or blank)"
-                }
-            }
-        }
-    }
-
-    // build forms dinamically
-    let forms = {
-        "segmentation": {
-            "title": "Segmentation",
-            "fields": {
-                "threshold": {
-                    "label": "Threshold",
-                    "type": "number",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Threshold value for the segmentation algorithm",
-                    "validationMessage": "Please enter a valid threshold value (number)"
-                },
-                "min_area": {
-                    "label": "Min Area",
-                    "type": "number",
-                    "min": 0,
-                    "required": true,
-                    "tooltip": "Minimum area for detected objects",
-                    "validationMessage": "Please enter a valid minimum area value (number)"
-                },
-                "max_area": {
-                    "label": "Max Area",
-                    "type": "number",
-                    "min": 1,
-                    "required": true,
-                    "tooltip": "Maximum area for detected objects",
-                    "validationMessage": "Please enter a valid maximum area value (number)"
-                },
-                "min_frontier": {
-                    "label": "Min Frontier",
-                    "type": "number",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Minimum frontier for detected objects",
-                    "validationMessage": "Please enter a valid minimum frontier value (number)"
-                },
-                "n_workers": {
-                    "label": "Number of Workers",
-                    "type": "number",
-                    "min": 1,
-                    "required": true,
-                    "tooltip": "Number of workers to use for segmentation",
-                    "validationMessage": "Please enter a valid number of workers (> 1)"
-                }
-            }
-        },
-        "linking": {
-            "title": "Linking",
-            "fields": {
-                "distance_weight": {
-                    "label": "Distance Weight",
-                    "type": "number",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Distance weight for linking",
-                    "validationMessage": "Please enter a valid distance weight value (number)"
-                },
-                "n_workers": {
-                    "label": "Number of Workers",
-                    "type": "number",
-                    "min": 1,
-                    "required": true,
-                    "tooltip": "Number of workers to use for linking",
-                    "validationMessage": "Please enter a valid number of workers (> 1)"
-                },
-                "max_neighbors": {
-                    "label": "Max Neighbors",
-                    "type": "number",
-                    "min": 1,
-                    "required": true,
-                    "tooltip": "Maximum number of neighbors",
-                    "validationMessage": "Please enter a valid maximum number of neighbors (> 1)"
-                },
-            }
-        },
-        "tracking": {
-            "title": "Tracking",
-            "fields": {
-                "appear_weight": {
-                    "label": "Appear Weight",
-                    "type": "number",
-                    "max": "0.0",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Appear weight for tracking",
-                    "validationMessage": "Please enter a valid appear weight value (negative number)"
-                },
-                "disappear_weight": {
-                    "label": "Disappear Weight",
-                    "type": "number",
-                    "max": "0.0",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Disappear weight for tracking",
-                    "validationMessage": "Please enter a valid disappear weight value (negative number)"
-                },
-                "division_weight": {
-                    "label": "Division Weight",
-                    "type": "number",
-                    "max": "0.0",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Division weight for tracking",
-                    "validationMessage": "Please enter a valid division weight value (negative number)"
-                },
-                "window_size": {
-                    "label": "Window Size",
-                    "type": "number",
-                    "min": 1,
-                    "tooltip": "Window size for tracking",
-                    "validationMessage": "Please enter a valid window size value (number or blank)"
-                },
-                "overlap_size": {
-                    "label": "Overlap Size",
-                    "type": "number",
-                    "min": 1,
-                    "required": true,
-                    "tooltip": "Overlap size for tracking",
-                    "validationMessage": "Please enter a valid overlap size value (number)"
-                },
-                "solution_gap": {
-                    "label": "Solution Gap",
-                    "type": "number",
-                    "step": "any",
-                    "required": true,
-                    "tooltip": "Solution gap for tracking",
-                    "validationMessage": "Please enter a valid solution gap value (number)"
-                },
-                "n_threads": {
-                    "label": "Number of Threads",
-                    "type": "number",
-                    "min": -1,
-                    "required": true,
-                    "tooltip": "Number of Threads to use for tracking. -1 for all available threads.",
-                    "validationMessage": "Please enter a valid number of threads"
-                }
-            }
-        }
-    }
+    let forms = getJsonFromFile('forms.json')
 
     let extended_forms = forms
     extended_forms["additional_options"] = {
@@ -373,7 +148,7 @@ function validateAllForms() {
                 div.classList.add('mb-3')
 
                 let label = document.createElement('label')
-                label.htmlFor = field_name
+                label.htmlFor = key + "_" + field_name
                 label.innerHTML = field.label
 
                 // <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Tooltip on right">
@@ -419,40 +194,6 @@ function validateAllForms() {
                 div.appendChild(invalidFeedback)
 
                 _form.appendChild(div)
-                // let div = document.createElement('div')
-                // div.classList.add('mb-3')
-                //
-                // let label = document.createElement('label')
-                // label.htmlFor = subfield
-                // label.innerHTML = field.fields[subfield].label
-                //
-                // let tooltip = document.createElement('button')
-                // tooltip.type = 'button'
-                // tooltip.classList.add('btn', 'btn-light', 'btn-sm', 'bi', 'bi-question-circle')
-                // tooltip.dataset.bsToggle = 'tooltip'
-                // tooltip.dataset.bsPlacement = 'right'
-                // tooltip.title = field.fields[subfield].tooltip
-                //
-                // label.appendChild(tooltip)
-                // div.appendChild(label)
-                //
-                // let input = document.createElement('input')
-                // input.classList.add('form-control', 'control-sm')
-                // input.id = key + "_" + subfield
-                // input.name = subfield
-                // input.type = field.fields[subfield].type
-                // input.step = field.fields[subfield].step || 1
-                // input.min = field.fields[subfield].min || ''
-                // input.max = field.fields[subfield].max || ''
-                // input.required = field.fields[subfield].required || false
-                // div.appendChild(input)
-                //
-                // let invalidFeedback = document.createElement('div')
-                // invalidFeedback.classList.add('invalid-feedback')
-                // invalidFeedback.innerHTML = field.fields[subfield].validationMessage
-                // div.appendChild(invalidFeedback)
-                //
-                // _form.appendChild(div)
             }
 
             delete queue_fields_to_add[field_name]
@@ -461,47 +202,6 @@ function validateAllForms() {
         if (current_subform) {
             form.appendChild(current_subform)
         }
-
-        // for (let field in forms[key].fields) {
-        //     let div = document.createElement('div')
-        //     div.classList.add('mb-3')
-        //
-        //     let label = document.createElement('label')
-        //     label.htmlFor = field
-        //     label.innerHTML = forms[key].fields[field].label
-        //
-        //     // <button type="button" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="right" title="Tooltip on right">
-        //     //   Tooltip on right
-        //     // </button>
-        //
-        //     let tooltip = document.createElement('button')
-        //     tooltip.type = 'button'
-        //     tooltip.classList.add('btn', 'btn-light', 'btn-sm', 'bi', 'bi-question-circle')
-        //     tooltip.dataset.bsToggle = 'tooltip'
-        //     tooltip.dataset.bsPlacement = 'right'
-        //     tooltip.title = forms[key].fields[field].tooltip
-        //
-        //     label.appendChild(tooltip)
-        //     div.appendChild(label)
-        //
-        //     let input = document.createElement('input')
-        //     input.classList.add('form-control', 'control-sm')
-        //     input.id = key + "_" + field
-        //     input.name = field
-        //     input.type = forms[key].fields[field].type
-        //     input.step = forms[key].fields[field].step || 1
-        //     input.min = forms[key].fields[field].min || ''
-        //     input.max = forms[key].fields[field].max || ''
-        //     input.required = forms[key].fields[field].required || false
-        //     div.appendChild(input)
-        //
-        //     let invalidFeedback = document.createElement('div')
-        //     invalidFeedback.classList.add('invalid-feedback')
-        //     invalidFeedback.innerHTML = forms[key].fields[field].validationMessage
-        //     div.appendChild(invalidFeedback)
-        //
-        //     form.appendChild(div)
-        // }
 
         tabPane.appendChild(form)
         tabContent.appendChild(tabPane)
@@ -590,6 +290,24 @@ function updateFormWithJson(json) {
 
 }
 
+function updateJsonWithImages(json) {
+    const fields = {
+        "image_channel_or_path": "Image",
+        "edges_channel_or_path": "Edges Image",
+        "detection_channel_or_path": "Detection Image",
+        "labels_channel_or_path": "Labels Image"
+    }
+
+    for (const [field, description] of Object.entries(fields)) {
+        let input = document.getElementById(field)
+        if (input) {
+            json.experiment[field] = input.value
+        }
+    }
+    return json
+
+}
+
 function updateJsonWithForm(json) {
     for (let key in json.experiment.config) {
         let form = document.getElementById(key)
@@ -667,11 +385,12 @@ function updateAdditionalForms(json) {
 var _json
 var _original_json
 
-function get_json() {
-    json = _json
+function get_json(json = _json) {
+    json = JSON.parse(JSON.stringify(json))
     json = updateJsonWithForm(json)
+    json = updateJsonWithImages(json)
     //return a copy of the json
-    return JSON.parse(JSON.stringify(json))
+    return json
 }
 
 function set_json(json) {
@@ -752,12 +471,18 @@ var jsConnector = {
                 document.getElementById('select-options').addEventListener('change', function () {
                     var selectedOption = this.options[this.selectedIndex];
                     var json = selectedOption.getAttribute('data-json');
-                    set_json(JSON.parse(json))
-                    _original_json = JSON.parse(json)
+                    json = JSON.parse(json);
+                    _json = json
+                    set_json(json)
+                    _original_json = json
 
                     document.getElementById("runButton").disabled = true;
                     document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
                     document.getElementById("runButton").classList.add("btn-outline-primary")
+                    document.getElementById("runButtonDropdown").disabled = true;
+                    document.getElementById("runButtonDropdown").classList.remove("btn-primary", "btn-secondary")
+                    document.getElementById("runButtonDropdown").classList.add("btn-outline-primary")
+
 
                     document.getElementById("selectImages").classList.remove("btn-secondary")
                     document.getElementById("selectImages").classList.add("btn-primary")
@@ -796,10 +521,17 @@ var jsConnector = {
             }
             set_json(json)
             document.getElementById("runButton").disabled = false;
+            document.getElementById("runButtonDropdown").disabled = false;
             document.getElementById("selectImages").disabled = false;
             document.getElementById("viewButton").disabled = true;
-            document.getElementById("runButton").classList.replace("btn-outline-primary", "btn-primary")
-            document.getElementById("selectImages").classList.replace("btn-primary", "btn-secondary")
+            document.getElementById("runButton").classList.remove("btn-outline-primary", "btn-secondary")
+            document.getElementById("runButton").classList.add("btn-primary")
+            document.getElementById("runButtonDropdown").classList.remove("btn-outline-primary", "btn-secondary")
+            document.getElementById("runButtonDropdown").classList.add("btn-primary")
+            document.getElementById("selectImages").classList.remove("btn-primary")
+            document.getElementById("selectImages").classList.add( "btn-secondary")
+            document.getElementById("viewButton").classList.remove("btn-primary")
+            document.getElementById("viewButton").classList.add("btn-outline-primary")
         } catch (e) {
         }
     },
@@ -812,9 +544,11 @@ var jsConnector = {
         hideLoadingOverlay();
         document.getElementById("viewButton").disabled = false;
         document.getElementById("runButton").disabled = false;
+        document.getElementById("runButtonDropdown").disabled = false;
         document.getElementById("selectImages").disabled = false;
         document.getElementById("viewButton").classList.replace("btn-outline-primary", "btn-primary")
         document.getElementById("runButton").classList.replace("btn-primary", "btn-secondary")
+        document.getElementById("runButtonDropdown").classList.replace("btn-primary", "btn-secondary")
     },
     /**
      * Close the connection.
@@ -851,7 +585,7 @@ document.getElementById("selectImages").addEventListener("click", function () {
 // Function for run button
 document.getElementById('runButton').addEventListener('click', function () {
     var url = document.getElementById('select-options').options[document.getElementById('select-options').selectedIndex].value;
-    var updatedJson = get_json();
+    var updatedJson = get_json(_original_json);
 
     try {
         javaConnector.connectToUltrackWebsocket(url, JSON.stringify(updatedJson))
