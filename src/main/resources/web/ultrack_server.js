@@ -490,9 +490,6 @@ var jsConnector = {
                     document.getElementById("runButton").disabled = true;
                     document.getElementById("runButton").classList.remove("btn-primary", "btn-secondary")
                     document.getElementById("runButton").classList.add("btn-outline-primary")
-                    document.getElementById("runButtonDropdown").disabled = true;
-                    document.getElementById("runButtonDropdown").classList.remove("btn-primary", "btn-secondary")
-                    document.getElementById("runButtonDropdown").classList.add("btn-outline-primary")
 
 
                     document.getElementById("selectImages").classList.remove("btn-secondary")
@@ -524,13 +521,10 @@ var jsConnector = {
             }
             set_json(json)
             document.getElementById("runButton").disabled = false;
-            document.getElementById("runButtonDropdown").disabled = false;
             document.getElementById("selectImages").disabled = false;
             document.getElementById("viewButton").disabled = true;
             document.getElementById("runButton").classList.remove("btn-outline-primary", "btn-secondary")
             document.getElementById("runButton").classList.add("btn-primary")
-            document.getElementById("runButtonDropdown").classList.remove("btn-outline-primary", "btn-secondary")
-            document.getElementById("runButtonDropdown").classList.add("btn-primary")
             document.getElementById("selectImages").classList.remove("btn-primary")
             document.getElementById("selectImages").classList.add( "btn-secondary")
             document.getElementById("viewButton").classList.remove("btn-primary")
@@ -547,11 +541,9 @@ var jsConnector = {
         hideLoadingOverlay();
         document.getElementById("viewButton").disabled = false;
         document.getElementById("runButton").disabled = false;
-        document.getElementById("runButtonDropdown").disabled = false;
         document.getElementById("selectImages").disabled = false;
         document.getElementById("viewButton").classList.replace("btn-outline-primary", "btn-primary")
         document.getElementById("runButton").classList.replace("btn-primary", "btn-secondary")
-        document.getElementById("runButtonDropdown").classList.replace("btn-primary", "btn-secondary")
     },
     /**
      * Close the connection.
