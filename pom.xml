@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.scijava</groupId>
         <artifactId>pom-scijava</artifactId>
         <version>37.0.0</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <groupId>org.czbiohub.royerlab</groupId>
@@ -90,7 +91,8 @@
         <package-name>fiji.plugin.ultrack</package-name>
         <license.licenseName>gpl_v3</license.licenseName>
         <license.copyrightOwners>RoyerLab.</license.copyrightOwners>
-        <license.projectName>Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.</license.projectName>
+        <license.projectName>Ultrack: Large-Scale Multi-Hypotheses Cell Tracking Using Ultrametric Contours Maps.
+        </license.projectName>
 
         <!-- NB: Deploy releases to the SciJava Maven repository. -->
         <releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
@@ -118,6 +120,12 @@
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>TrackMate</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mastodon</groupId>
+            <artifactId>mastodon</artifactId>
+            <version>1.0.0-beta-27</version>
         </dependency>
         <!-- Fiji dependencies -->
         <dependency>
@@ -192,11 +200,11 @@
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>net.revelc.code.formatter</groupId>-->
-<!--            <artifactId>jsdt-core</artifactId>-->
-<!--            <version>3.3.0</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>net.revelc.code.formatter</groupId>-->
+        <!--            <artifactId>jsdt-core</artifactId>-->
+        <!--            <version>3.3.0</version>-->
+        <!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -208,9 +216,9 @@
                     <descriptors>
                         <descriptor>src/main/assembly/dependency.xml</descriptor>
                     </descriptors>
-<!--                    <descriptorRefs>-->
-<!--                        <descriptorRef>jar-with-dependencies</descriptorRef>-->
-<!--                    </descriptorRefs>-->
+                    <!--                    <descriptorRefs>-->
+                    <!--                        <descriptorRef>jar-with-dependencies</descriptorRef>-->
+                    <!--                    </descriptorRefs>-->
                 </configuration>
                 <executions>
                     <execution>
