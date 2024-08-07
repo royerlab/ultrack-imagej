@@ -24,6 +24,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -91,7 +92,8 @@ public abstract class UltrackConnector {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             // Example command that lists directory content. For Windows, you might use "cmd", "/c", "dir".
-            processBuilder.command(ultrackPath, "server", "--port", String.valueOf(port));
+            URL url = getClass().getResource("/config.toml");
+            processBuilder.command(ultrackPath, "server", "--port", String.valueOf(port), "--config", url.getPath());
             processBuilder.redirectErrorStream(true);
 
             try {
