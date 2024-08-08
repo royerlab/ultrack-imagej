@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 import java.util.prefs.Preferences;
 
 public class CondaEnvironmentFinder extends JDialog {
@@ -52,9 +53,10 @@ public class CondaEnvironmentFinder extends JDialog {
         condaPathField.setEditable(false);
         condaEnvComboBox = new JComboBox<>();
         JButton selectCondaPathButton = new JButton("Select Conda Path");
+        JButton addCondaEnvButton = new JButton("New Ultrack Env.");
 
         // Layout
-        setLayout(new BorderLayout(5, 5));
+        setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         {
             final JPanel pnNorth = new JPanel();
             pnNorth.setLayout(new BorderLayout());
@@ -65,38 +67,53 @@ public class CondaEnvironmentFinder extends JDialog {
             textArea.setBorder(BorderFactory.createEmptyBorder());
             textArea.setFont(UIManager.getFont("Label.font"));
             pnNorth.add(textArea, BorderLayout.CENTER);
-            add(pnNorth, BorderLayout.NORTH);
+            add(pnNorth);
         }
         {
             final JPanel pnCenter = new JPanel();
             GridBagLayout gridBagLayout = new GridBagLayout();
             pnCenter.setLayout(gridBagLayout);
             GridBagConstraints c = new GridBagConstraints();
+            // First row
             c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
             c.gridx = 0;
             c.gridy = 0;
-            c.weightx = 1;
             JLabel lbPath = new JLabel("Conda Path");
             gridBagLayout.setConstraints(lbPath, c);
+            // Second row
             c.gridy++;
-            pnCenter.add(lbPath);
             c.gridx = 0;
+            c.gridwidth = 4;
+            pnCenter.add(lbPath);
             gridBagLayout.setConstraints(condaPathField, c);
             pnCenter.add(condaPathField);
-            c.gridx = 1;
+            c.gridx = 4;
+            c.gridwidth = 2;
+            c.weightx = 0;
             gridBagLayout.setConstraints(selectCondaPathButton, c);
             pnCenter.add(selectCondaPathButton);
-            c.gridx = 0;
+            // Third row
             c.gridy++;
+            c.gridx = 0;
             JLabel lbEnv = new JLabel("Conda Environment");
             gridBagLayout.setConstraints(lbEnv, c);
             pnCenter.add(lbEnv);
+            // Fourth row
             c.gridy++;
             c.gridx = 0;
-            c.gridwidth = 2;
+            c.gridwidth = 5;
+            c.weightx = 1;
             gridBagLayout.setConstraints(condaEnvComboBox, c);
             pnCenter.add(condaEnvComboBox);
-            add(pnCenter, BorderLayout.CENTER);
+
+            c.gridx = 5;
+            c.gridwidth = 1;
+            c.weightx = 0;
+            gridBagLayout.setConstraints(addCondaEnvButton, c);
+            pnCenter.add(addCondaEnvButton);
+
+            add(pnCenter);
         }
         {
             final JPanel pnSouth = new JPanel();
@@ -145,7 +162,7 @@ public class CondaEnvironmentFinder extends JDialog {
 
             pnSouth.add(btnOk);
             pnSouth.add(btnCancel);
-            add(pnSouth, BorderLayout.SOUTH);
+            add(pnSouth);
         }
 
         // Add action listener to button
@@ -168,6 +185,52 @@ public class CondaEnvironmentFinder extends JDialog {
                     ex.printStackTrace();
                 }
             }
+        });
+
+        addCondaEnvButton.addActionListener(e -> {
+            String condaPath = condaPathField.getText();
+            if (condaPath.isEmpty()) {
+                JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Please select the conda path first.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String uuid = java.util.UUID.randomUUID().toString();
+            uuid = uuid.substring(0, 4);
+            String envName = "ultrack_env_" + uuid;
+
+            String createCommand = condaPath + " create -y -n " + envName + " -c conda-forge python=3.10 git";
+            String installUltrackCommand = condaPath + " run  -n " + envName + " --no-capture-output python -m pip install ultrack[api]@git+https://github.com/royerlab/ultrack";
+
+            CompletableFuture<Integer> future = new CommandExecutor((Frame) this.getOwner(), createCommand).executeCommand();
+
+            future.thenAccept(exitCode -> {
+                if (exitCode != 0) {
+                    JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Failed to create Ultrack environment.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                CompletableFuture<Integer> future2 = new CommandExecutor((Frame) this.getOwner(), installUltrackCommand).executeCommand();
+
+                future2.thenAccept(exitCodeInstall -> {
+                    if (exitCodeInstall != 0) {
+                        JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Failed to install Ultrack in the new environment.", "Error", JOptionPane.ERROR_MESSAGE);
+                        System.out.println("Exit code: " + exitCodeInstall);
+                        return;
+                    } else {
+                        JOptionPane.showMessageDialog(CondaEnvironmentFinder.this, "Ultrack was successfully installed in the new environment.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
+                    updateCondaEnvironments(new File(condaPath));
+
+                    // find envName in the list of environments
+                    for (int i = 0; i < condaEnvComboBox.getItemCount(); i++) {
+                        CondaEnvironment env = condaEnvComboBox.getItemAt(i);
+                        if (env.getPath().contains(envName)) {
+                            condaEnvComboBox.setSelectedItem(env);
+                            break;
+                        }
+                    }
+                });
+            });
         });
 
         String condaPath = getCurrentCondaPath();
@@ -349,5 +412,4 @@ public class CondaEnvironmentFinder extends JDialog {
             ex.printStackTrace();
         }
     }
-
 }
