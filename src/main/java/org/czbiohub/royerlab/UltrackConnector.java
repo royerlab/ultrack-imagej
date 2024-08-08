@@ -81,6 +81,25 @@ public abstract class UltrackConnector {
         return port;
     }
 
+    private String loadTemporaryResource(String resourceName) {
+        String targetPath = System.getProperty("java.io.tmpdir") + File.separator + resourceName;
+        try (InputStream is = getClass().getResourceAsStream(resourceName)) {
+            if (is == null) {
+                throw new RuntimeException("Resource not found: " + resourceName);
+            }
+            try (OutputStream os = new FileOutputStream(targetPath)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return targetPath;
+    }
+
     public void startServer() {
         int randomPort;
         do {
@@ -89,50 +108,53 @@ public abstract class UltrackConnector {
         System.out.println(randomPort);
         port = randomPort;
 
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            // Example command that lists directory content. For Windows, you might use "cmd", "/c", "dir".
-            URL url = getClass().getResource("/config.toml");
-            processBuilder.command(ultrackPath, "server", "--port", String.valueOf(port), "--config", url.getPath());
-            processBuilder.redirectErrorStream(true);
-
+        new Thread(() -> {
             try {
-                currentProcess = processBuilder.start();
-            } catch (IOException ex) {
-                SwingUtilities.invokeLater(() -> onExecutionError("Error starting the server: " + ex.getMessage()));
-                return;
+                ProcessBuilder processBuilder = new ProcessBuilder();
+                // Example command that lists directory content. For Windows, you might use "cmd", "/c", "dir".
+                String resource_path = loadTemporaryResource("/config.toml");
+                processBuilder.command(ultrackPath, "server", "--port", String.valueOf(port), "--config", resource_path);
+                processBuilder.redirectErrorStream(true);
+
+                try {
+                    currentProcess = processBuilder.start();
+                    System.out.println("Server started");
+                } catch (IOException ex) {
+                    SwingUtilities.invokeLater(() -> onExecutionError("Error starting the server: " + ex.getMessage()));
+                    return;
+                }
+
+                // wait for the server to end
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
 
-            // wait for the server to end
+            this.serverListenerThread = new Thread(() -> {
+                try {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(currentProcess.getInputStream()))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            this.onLog.accept(line);
+                        }
+                    }
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        this.serverListenerThread = new Thread(() -> {
-            try {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(currentProcess.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        this.onLog.accept(line);
+                    int exitCode = currentProcess.waitFor();
+                    if (exitCode != 0) {
+                        SwingUtilities.invokeLater(() -> onExecutionError("Server ended with exit code " + exitCode));
+                    }
+                } catch (IOException e) {
+                    if (!this.interruptionRequested) {
+                        SwingUtilities.invokeLater(() -> onExecutionError("Error reading the server output: " + e.getMessage()));
+                    }
+                } catch (InterruptedException e) {
+                    if (!this.interruptionRequested) {
+                        throw new RuntimeException(e);
                     }
                 }
-
-                int exitCode = currentProcess.waitFor();
-                if (exitCode != 0) {
-                    SwingUtilities.invokeLater(() -> onExecutionError("Server ended with exit code " + exitCode));
-                }
-            } catch (IOException e) {
-                if (!this.interruptionRequested) {
-                    SwingUtilities.invokeLater(() -> onExecutionError("Error reading the server output: " + e.getMessage()));
-                }
-            } catch (InterruptedException e) {
-                if (!this.interruptionRequested) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        this.serverListenerThread.start();
+            });
+            this.serverListenerThread.start();
+        }).start();
 
     }
 
