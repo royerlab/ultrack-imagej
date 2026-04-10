@@ -101,6 +101,12 @@ public abstract class UltrackConnector {
     }
 
     public void startServer() {
+        if (ultrackPath == null || ultrackPath.isEmpty()) {
+            SwingUtilities.invokeLater(() -> onExecutionError(
+                "ultrack path is not configured. Please select a conda environment first."));
+            return;
+        }
+
         int randomPort;
         do {
             randomPort = (int) (Math.random() * 50000 + 10000);

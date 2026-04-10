@@ -463,6 +463,9 @@ var jsConnector = {
                     }
                 })
                 .then(data => {
+                    // Guard: skip if response was not OK or body was empty
+                    if (!data) return;
+
                     available_configs = data;
 
                     hideLoadingOverlay();
@@ -504,6 +507,10 @@ var jsConnector = {
                 document.getElementById("select-options").dispatchEvent(new Event('change'));
 
                     connection_successfull = true;
+                })
+                .catch(err => {
+                    // Network or parse error — server not ready yet, keep polling.
+                    console.log('Waiting for server:', err);
                 })
         }
         showBody();

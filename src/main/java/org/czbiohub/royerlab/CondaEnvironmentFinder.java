@@ -378,8 +378,10 @@ public class CondaEnvironmentFinder extends JDialog {
 
     private void updateCondaEnvironments(File condaPath) {
         try {
-            String command = condaPath.getAbsolutePath() + " env list";
-            Process process = Runtime.getRuntime().exec(command);
+            // Use ProcessBuilder so paths containing spaces are handled correctly.
+            ProcessBuilder pb = new ProcessBuilder(condaPath.getAbsolutePath(), "env", "list");
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
             String line;

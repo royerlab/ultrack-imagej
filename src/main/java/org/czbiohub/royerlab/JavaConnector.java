@@ -162,9 +162,20 @@ public class JavaConnector {
     }
 
     private void onMessageConsumer(String response) {
-        // parse json response
         Gson gson = new Gson();
-        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
+        JsonObject jsonObject;
+        try {
+            jsonObject = gson.fromJson(response, JsonObject.class);
+            if (jsonObject == null) {
+                throw new IllegalArgumentException("Received null JSON from server.");
+            }
+        } catch (Exception e) {
+            // The server sent plain text (e.g. a traceback) or malformed JSON.
+            // Log it as an error rather than crashing with JsonSyntaxException.
+            onError.accept(response);
+            Platform.runLater(() -> javascriptConnector.call("closeConnection"));
+            return;
+        }
         String err = jsonObject.get("err_log").getAsString();
         String out = jsonObject.get("std_log").getAsString();
         onLog.accept(out);
@@ -173,7 +184,6 @@ public class JavaConnector {
 
         if (jsonObject.get("status").getAsString().equals("success")) {
             Platform.runLater(() -> javascriptConnector.call("finishTracking", ""));
-
         }
     }
 

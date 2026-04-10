@@ -21,7 +21,6 @@ package org.czbiohub.royerlab;/*-
  */
 import ij.ImageJ;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -102,34 +101,38 @@ public class MainApp extends JFrame {
                 WebView webView = new WebView();
                 fxPanel.setScene(new Scene(webView));
                 webEngine = webView.getEngine();
-                try {
-                    Task<Void> task = new Task<Void>() {
-                        @Override
-                        protected Void call() {
-                            String path = null;
-                            while (path == null) {
-                                try {
-                                    path = CondaEnvironmentFinder.getUltrackPath();
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                if (path == null) {
-                                    JOptionPane.showMessageDialog(null, "You can't proceed without selecting the ultrack path", "Error", JOptionPane.ERROR_MESSAGE);
-                                }
-                            }
-                            String finalPath = path;
-                            Platform.runLater(() -> onLoadUltrackPath(finalPath));
-                            return null;
-                        }
-                    };
-                    task.run();
 
+                // Show the loading screen immediately so the UI is responsive.
+                try {
                     webEngine.load(String.valueOf(getClass().getResource("/web/loading.html").toURI()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-
+                // Find the ultrack path in a background thread so the JavaFX thread
+                // is never blocked.  Blocking the JavaFX thread here causes the window
+                // to freeze: dialogs shown by CondaEnvironmentFinder cannot receive
+                // events and the loading screen never renders.
+                Thread findPathThread = new Thread(() -> {
+                    String path = null;
+                    while (path == null) {
+                        try {
+                            path = CondaEnvironmentFinder.getUltrackPath();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (path == null) {
+                            JOptionPane.showMessageDialog(null, "You can't proceed without selecting the ultrack path", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                    String finalPath = path;
+                    Platform.runLater(() -> onLoadUltrackPath(finalPath));
+                });
+                findPathThread.setDaemon(true);
+                findPathThread.start();
 
             } catch (Exception e) {
                 e.printStackTrace();
