@@ -84,11 +84,13 @@ public class MainApp extends JFrame {
 
             @Override
             public void onUpdateCondaEnv() {
+                // Called from the background thread launched in AppMenu — never on JAT.
                 String path = null;
                 try {
                     path = CondaEnvironmentFinder.getUltrackPath();
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    Thread.currentThread().interrupt();
+                    return;
                 }
                 String finalPath = path;
                 Platform.runLater(() -> onLoadUltrackPath(finalPath));

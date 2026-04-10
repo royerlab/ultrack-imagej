@@ -72,7 +72,14 @@ public class JavaConnector {
         };
         ultrackConnector.startServer();
 
-        javascriptConnector.call("setPort", ultrackConnector.getPort());
+        // startServer() returns early (port stays -1) when ultrackPath is null/empty.
+        // Proceeding with port=-1 would make the JS polling loop spin on
+        // 127.0.0.1:-1/config/available forever, so bail out here instead.
+        int port = ultrackConnector.getPort();
+        if (port == -1) {
+            return;
+        }
+        javascriptConnector.call("setPort", port);
         javascriptConnector.call("startServer", "Ultrack Server Started");
     }
 
@@ -176,13 +183,13 @@ public class JavaConnector {
             Platform.runLater(() -> javascriptConnector.call("closeConnection"));
             return;
         }
-        String err = jsonObject.get("err_log").getAsString();
-        String out = jsonObject.get("std_log").getAsString();
+        String err = jsonObject.has("err_log") ? jsonObject.get("err_log").getAsString() : "";
+        String out = jsonObject.has("std_log") ? jsonObject.get("std_log").getAsString() : "";
         onLog.accept(out);
         onError.accept(err);
         Platform.runLater(() -> javascriptConnector.call("updateJson", response));
 
-        if (jsonObject.get("status").getAsString().equals("success")) {
+        if (jsonObject.has("status") && jsonObject.get("status").getAsString().equals("success")) {
             Platform.runLater(() -> javascriptConnector.call("finishTracking", ""));
         }
     }

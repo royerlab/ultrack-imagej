@@ -181,12 +181,21 @@ public abstract class UltrackConnector {
         }
         c.connect();
         CountDownLatch latch = c.latch;
-        try {
-            latch.await();
-            System.out.println(message);
-            c.send(message);
-        } catch (InterruptedException e) {
-            onExecutionError("Error connecting to the websocket: " + e.getMessage());
-        }
+        // Waiting for the latch blocks the calling thread.  Since this method can be
+        // invoked from the JavaFX Application Thread (via JS → connectToUltrackWebsocket),
+        // blocking here would freeze the UI just like the startup-freeze bug.  Hand the
+        // wait off to a daemon background thread instead.
+        Thread connectThread = new Thread(() -> {
+            try {
+                latch.await();
+                System.out.println(message);
+                c.send(message);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                onExecutionError("Error connecting to the websocket: " + e.getMessage());
+            }
+        });
+        connectThread.setDaemon(true);
+        connectThread.start();
     }
 }
