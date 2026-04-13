@@ -21,7 +21,7 @@ package org.czbiohub.royerlab;/*-
  */
 import ij.ImageJ;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
+import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -43,6 +43,8 @@ public class MainApp extends JFrame {
     private JTextArea logAreaOut;
     private JTextArea internalLogArea;
     private WebEngine webEngine;
+    /** Held so it can be removed before a new one is added on env change. */
+    private ChangeListener<Worker.State> pageLoadListener;
 
     public MainApp() {
         super("Ultrack");
@@ -85,11 +87,13 @@ public class MainApp extends JFrame {
 
             @Override
             public void onUpdateCondaEnv() {
+                // Called from the background thread launched in AppMenu — never on JAT.
                 String path = null;
                 try {
                     path = CondaEnvironmentFinder.getUltrackPath();
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    Thread.currentThread().interrupt();
+                    return;
                 }
                 String finalPath = path;
                 Platform.runLater(() -> onLoadUltrackPath(finalPath));
@@ -102,34 +106,38 @@ public class MainApp extends JFrame {
                 WebView webView = new WebView();
                 fxPanel.setScene(new Scene(webView));
                 webEngine = webView.getEngine();
-                try {
-                    Task<Void> task = new Task<Void>() {
-                        @Override
-                        protected Void call() {
-                            String path = null;
-                            while (path == null) {
-                                try {
-                                    path = CondaEnvironmentFinder.getUltrackPath();
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                if (path == null) {
-                                    JOptionPane.showMessageDialog(null, "You can't proceed without selecting the ultrack path", "Error", JOptionPane.ERROR_MESSAGE);
-                                }
-                            }
-                            String finalPath = path;
-                            Platform.runLater(() -> onLoadUltrackPath(finalPath));
-                            return null;
-                        }
-                    };
-                    task.run();
 
+                // Show the loading screen immediately so the UI is responsive.
+                try {
                     webEngine.load(String.valueOf(getClass().getResource("/web/loading.html").toURI()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
-
+                // Find the ultrack path in a background thread so the JavaFX thread
+                // is never blocked.  Blocking the JavaFX thread here causes the window
+                // to freeze: dialogs shown by CondaEnvironmentFinder cannot receive
+                // events and the loading screen never renders.
+                Thread findPathThread = new Thread(() -> {
+                    String path = null;
+                    while (path == null) {
+                        try {
+                            path = CondaEnvironmentFinder.getUltrackPath();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            return;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (path == null) {
+                            JOptionPane.showMessageDialog(null, "You can't proceed without selecting the ultrack path", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                    String finalPath = path;
+                    Platform.runLater(() -> onLoadUltrackPath(finalPath));
+                });
+                findPathThread.setDaemon(true);
+                findPathThread.start();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -152,24 +160,27 @@ public class MainApp extends JFrame {
     }
 
     private void onLoadUltrackPath(String ultrackPath) {
-        // get resource from the resources folder
         URL url = getClass().getResource("/web/index.html");
+        if (url == null) {
+            JOptionPane.showMessageDialog(null, "Resource web/index.html not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-        // set up the listener
-        webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+        // Remove the previous listener before adding a new one so that repeated
+        // calls (e.g. after an env change) don't accumulate stale listeners that
+        // re-wire javaConnector on every subsequent page load.
+        if (pageLoadListener != null) {
+            webEngine.getLoadWorker().stateProperty().removeListener(pageLoadListener);
+        }
+        pageLoadListener = (observable, oldValue, newValue) -> {
             if (Worker.State.SUCCEEDED == newValue) {
-                // get the Javascript connector object.
                 javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
                 javaConnector = new JavaConnector(javascriptConnector, ultrackPath, this::onLog, this::onLogError, this::onServerLog);
-
-                // set an interface object named 'javaConnector' in the web engine's page
                 JSObject window = (JSObject) webEngine.executeScript("window");
                 window.setMember("javaConnector", javaConnector);
             }
-        });
-
-        // now load the page
-        assert url != null;
+        };
+        webEngine.getLoadWorker().stateProperty().addListener(pageLoadListener);
         webEngine.load(url.toString());
     }
 

@@ -72,15 +72,24 @@ public class JavaConnector {
         };
         ultrackConnector.startServer();
 
-        javascriptConnector.call("setPort", ultrackConnector.getPort());
+        // startServer() returns early (port stays -1) when ultrackPath is null/empty.
+        // Proceeding with port=-1 would make the JS polling loop spin on
+        // 127.0.0.1:-1/config/available forever, so bail out here instead.
+        int port = ultrackConnector.getPort();
+        if (port == -1) {
+            return;
+        }
+        javascriptConnector.call("setPort", port);
         javascriptConnector.call("startServer", "Ultrack Server Started");
     }
 
     @SuppressWarnings("unused")
     public void stopUltrackServer() {
         System.out.println("Stopping Ultrack Server");
-        ultrackConnector.stopServer();
-        ultrackConnector = null;
+        if (ultrackConnector != null) {
+            ultrackConnector.stopServer();
+            ultrackConnector = null;
+        }
         javascriptConnector.call("successfullyStopped");
     }
 
@@ -162,18 +171,28 @@ public class JavaConnector {
     }
 
     private void onMessageConsumer(String response) {
-        // parse json response
         Gson gson = new Gson();
-        JsonObject jsonObject = gson.fromJson(response, JsonObject.class);
-        String err = jsonObject.get("err_log").getAsString();
-        String out = jsonObject.get("std_log").getAsString();
+        JsonObject jsonObject;
+        try {
+            jsonObject = gson.fromJson(response, JsonObject.class);
+            if (jsonObject == null) {
+                throw new IllegalArgumentException("Received null JSON from server.");
+            }
+        } catch (Exception e) {
+            // The server sent plain text (e.g. a traceback) or malformed JSON.
+            // Log it as an error rather than crashing with JsonSyntaxException.
+            onError.accept(response);
+            Platform.runLater(() -> javascriptConnector.call("closeConnection"));
+            return;
+        }
+        String err = jsonObject.has("err_log") ? jsonObject.get("err_log").getAsString() : "";
+        String out = jsonObject.has("std_log") ? jsonObject.get("std_log").getAsString() : "";
         onLog.accept(out);
         onError.accept(err);
         Platform.runLater(() -> javascriptConnector.call("updateJson", response));
 
-        if (jsonObject.get("status").getAsString().equals("success")) {
+        if (jsonObject.has("status") && jsonObject.get("status").getAsString().equals("success")) {
             Platform.runLater(() -> javascriptConnector.call("finishTracking", ""));
-
         }
     }
 

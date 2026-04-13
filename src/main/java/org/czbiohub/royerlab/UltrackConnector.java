@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class UltrackConnector {
@@ -101,6 +102,12 @@ public abstract class UltrackConnector {
     }
 
     public void startServer() {
+        if (ultrackPath == null || ultrackPath.isEmpty()) {
+            SwingUtilities.invokeLater(() -> onExecutionError(
+                "ultrack path is not configured. Please select a conda environment first."));
+            return;
+        }
+
         int randomPort;
         do {
             randomPort = (int) (Math.random() * 50000 + 10000);
@@ -175,12 +182,30 @@ public abstract class UltrackConnector {
         }
         c.connect();
         CountDownLatch latch = c.latch;
-        try {
-            latch.await();
-            System.out.println(message);
-            c.send(message);
-        } catch (InterruptedException e) {
-            onExecutionError("Error connecting to the websocket: " + e.getMessage());
-        }
+        // Waiting for the latch blocks the calling thread.  Since this method can be
+        // invoked from the JavaFX Application Thread (via JS → connectToUltrackWebsocket),
+        // blocking here would freeze the UI just like the startup-freeze bug.  Hand the
+        // wait off to a daemon background thread instead.
+        Thread connectThread = new Thread(() -> {
+            try {
+                boolean connected = latch.await(30, TimeUnit.SECONDS);
+                if (!connected) {
+                    // onError was never called (timeout), or onOpen never fired.
+                    onExecutionError("Timed out waiting for WebSocket connection.");
+                    return;
+                }
+                if (!c.isOpen()) {
+                    // onError already surfaced the failure via onErrorConsumer.
+                    return;
+                }
+                System.out.println(message);
+                c.send(message);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                onExecutionError("Error connecting to the websocket: " + e.getMessage());
+            }
+        });
+        connectThread.setDaemon(true);
+        connectThread.start();
     }
 }
