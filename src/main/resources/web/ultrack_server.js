@@ -271,7 +271,7 @@ function updateFormWithJson(json) {
 
     for (let key in additional_options) {
         key = additional_options[key]
-        id = "additional_options_" + key
+        let id = "additional_options_" + key
         let form = document.getElementById(id)
         if (!form) {
             continue
@@ -329,7 +329,7 @@ function updateJsonWithForm(json) {
 
     for (let key in additional_options) {
         key = additional_options[key]
-        id = "additional_options_" + key
+        let id = "additional_options_" + key
         let form = document.getElementById(id)
         if (!form) {
             continue
@@ -338,28 +338,24 @@ function updateJsonWithForm(json) {
             continue
         }
         // select all the fields in the form
-        inputs = form.querySelectorAll('.json-input')
-
+        const inputs = form.querySelectorAll('.json-input')
 
         for (let i = 0; i < inputs.length; i++) {
-             input = inputs[i]
-        //     //let input = form.querySelector('#' + id + "_" + field)
-             if (input) {
-
-                 if (input.name && input.value !== null && input.value !== "") {
-                     // remove the id prefix
-                     // _id = input.id.split(id + "_")[1]
-                     if (input.type === "checkbox") {
-                         value = input.checked
-                     } else {
-                         value = parseFloat(input.value)
-                         if (isNaN(value)) {
-                             value = input.value
-                         }
-                     }
-                     json[key][input.name] = value
-                 }
-             }
+            let input = inputs[i]
+            if (input) {
+                if (input.name && input.value !== null && input.value !== "") {
+                    let value;
+                    if (input.type === "checkbox") {
+                        value = input.checked
+                    } else {
+                        value = parseFloat(input.value)
+                        if (isNaN(value)) {
+                            value = input.value
+                        }
+                    }
+                    json[key][input.name] = value
+                }
+            }
         }
 
     }
@@ -372,7 +368,7 @@ function updateAdditionalForms(json) {
 
     for (let key in additional_options) {
         key = additional_options[key]
-        id = "additional_options_" + key
+        let id = "additional_options_" + key
         let form = document.getElementById(id)
         if (!form) {
             continue
@@ -444,14 +440,13 @@ var jsConnector = {
         hideLoadingOverlay();
     },
     updateJson: function (json) {
-        prev = get_json()
+        let prev = get_json()
         prev.experiment = JSON.parse(json)
         set_json(prev)
     },
     startServer: async function (status) {
-        connection_successfull = false;
-
-        available_configs = null
+        let connection_successfull = false;
+        let available_configs = null
 
         while (!connection_successfull) {
             await new Promise(r => setTimeout(r, 1000));
@@ -472,9 +467,9 @@ var jsConnector = {
                     document.getElementById('select-options').innerHTML = '';
 
                     Object.keys(available_configs).forEach(key => {
-                        link = available_configs[key]['link']
-                        config = available_configs[key]['config']
-                        human_name = available_configs[key]['human_name']
+                        const link = available_configs[key]['link']
+                        const config = available_configs[key]['config']
+                        const human_name = available_configs[key]['human_name']
                         var option = document.createElement("option");
                         option.text = human_name;
                         option.value = link;
@@ -521,8 +516,8 @@ var jsConnector = {
      */
     updateSelectedImages: function (images) {
         try {
-            json = get_json()
-            images_json = JSON.parse(images)
+            let json = get_json()
+            let images_json = JSON.parse(images)
             for (var i = 0; i < images_json.length; i++) {
                 json.experiment[images_json[i][0]] = images_json[i][1]
             }
@@ -570,11 +565,11 @@ var jsConnector = {
 
 document.getElementById("selectImages").addEventListener("click", function () {
     if (validateAllForms()) {
-        json = _original_json
-        image_options = ["image_channel_or_path", "edges_channel_or_path",
+        const json = _original_json
+        const image_options = ["image_channel_or_path", "edges_channel_or_path",
             "detection_channel_or_path", "labels_channel_or_path"]
 
-        available = []
+        let available = []
         for (var i = 0; i < image_options.length; i++) {
             if (image_options[i] in json.experiment && json.experiment[image_options[i]] != null) {
                 available.push(image_options[i])
@@ -598,8 +593,8 @@ document.getElementById('runButton').addEventListener('click', function () {
 });
 
 document.getElementById('viewButton').addEventListener('click', function () {
-    experimentJson = get_json();
-    id = experimentJson["experiment"]["id"]
+    const experimentJson = get_json();
+    const id = experimentJson["experiment"]["id"]
 
     fetch('http://127.0.0.1:' + PORT + '/experiment/' + id + '/trackmate')
         .then(response => {
@@ -610,7 +605,7 @@ document.getElementById('viewButton').addEventListener('click', function () {
         })
         .then(data => {
             if (!data) return;
-            xml = data['trackmate_xml']
+            const xml = data['trackmate_xml']
             javaConnector.viewTracks(xml)
         })
         .catch(err => {

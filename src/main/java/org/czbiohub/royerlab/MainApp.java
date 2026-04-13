@@ -21,6 +21,7 @@ package org.czbiohub.royerlab;/*-
  */
 import ij.ImageJ;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Worker;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -42,6 +43,8 @@ public class MainApp extends JFrame {
     private JTextArea logAreaOut;
     private JTextArea internalLogArea;
     private WebEngine webEngine;
+    /** Held so it can be removed before a new one is added on env change. */
+    private ChangeListener<Worker.State> pageLoadListener;
 
     public MainApp() {
         super("Ultrack");
@@ -157,24 +160,27 @@ public class MainApp extends JFrame {
     }
 
     private void onLoadUltrackPath(String ultrackPath) {
-        // get resource from the resources folder
         URL url = getClass().getResource("/web/index.html");
+        if (url == null) {
+            JOptionPane.showMessageDialog(null, "Resource web/index.html not found.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-        // set up the listener
-        webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+        // Remove the previous listener before adding a new one so that repeated
+        // calls (e.g. after an env change) don't accumulate stale listeners that
+        // re-wire javaConnector on every subsequent page load.
+        if (pageLoadListener != null) {
+            webEngine.getLoadWorker().stateProperty().removeListener(pageLoadListener);
+        }
+        pageLoadListener = (observable, oldValue, newValue) -> {
             if (Worker.State.SUCCEEDED == newValue) {
-                // get the Javascript connector object.
                 javascriptConnector = (JSObject) webEngine.executeScript("getJsConnector()");
                 javaConnector = new JavaConnector(javascriptConnector, ultrackPath, this::onLog, this::onLogError, this::onServerLog);
-
-                // set an interface object named 'javaConnector' in the web engine's page
                 JSObject window = (JSObject) webEngine.executeScript("window");
                 window.setMember("javaConnector", javaConnector);
             }
-        });
-
-        // now load the page
-        assert url != null;
+        };
+        webEngine.getLoadWorker().stateProperty().addListener(pageLoadListener);
         webEngine.load(url.toString());
     }
 

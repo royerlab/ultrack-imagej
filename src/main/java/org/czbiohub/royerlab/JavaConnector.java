@@ -86,8 +86,10 @@ public class JavaConnector {
     @SuppressWarnings("unused")
     public void stopUltrackServer() {
         System.out.println("Stopping Ultrack Server");
-        ultrackConnector.stopServer();
-        ultrackConnector = null;
+        if (ultrackConnector != null) {
+            ultrackConnector.stopServer();
+            ultrackConnector = null;
+        }
         javascriptConnector.call("successfullyStopped");
     }
 

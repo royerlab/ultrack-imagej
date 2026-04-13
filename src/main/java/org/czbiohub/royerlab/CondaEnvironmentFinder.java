@@ -337,25 +337,30 @@ public class CondaEnvironmentFinder extends JDialog {
     }
 
     public static String getUltrackPath() throws InterruptedException {
-        String condaPath = getCurrentCondaEnv();
-        ArrayList<String> possibleUltrackPaths = new ArrayList<>();
-        possibleUltrackPaths.add("ultrack");
-        if (condaPath != null) {
-            possibleUltrackPaths.add(condaPath + File.separator + "bin" + File.separator + "ultrack");
-            possibleUltrackPaths.add(condaPath + File.separator + "Scripts" + File.separator + "ultrack.exe");
-        }
-
-        for (String path : possibleUltrackPaths) {
-            if (checkIfCanExecute(path)) {
-                return path;
+        // Iterative rather than recursive: if the user repeatedly picks an env
+        // that doesn't have ultrack installed the recursive version would overflow
+        // the stack, whereas this loop just keeps asking.
+        while (true) {
+            String condaEnv = getCurrentCondaEnv();
+            ArrayList<String> candidates = new ArrayList<>();
+            candidates.add("ultrack");
+            if (condaEnv != null) {
+                candidates.add(condaEnv + File.separator + "bin" + File.separator + "ultrack");
+                candidates.add(condaEnv + File.separator + "Scripts" + File.separator + "ultrack.exe");
             }
-        }
 
-        condaPath = CondaEnvironmentFinder.openDialogToFindUltrack();
-        if (condaPath == null) {
-            return null;
+            for (String path : candidates) {
+                if (checkIfCanExecute(path)) {
+                    return path;
+                }
+            }
+
+            String selected = openDialogToFindUltrack();
+            if (selected == null) {
+                return null;
+            }
+            // Loop: re-check candidates with the newly saved conda env.
         }
-        return CondaEnvironmentFinder.getUltrackPath();
     }
 
     private void buildGUI() {
