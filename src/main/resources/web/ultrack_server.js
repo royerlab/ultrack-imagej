@@ -609,7 +609,11 @@ document.getElementById('viewButton').addEventListener('click', function () {
             }
         })
         .then(data => {
+            if (!data) return;
             xml = data['trackmate_xml']
             javaConnector.viewTracks(xml)
         })
+        .catch(err => {
+            console.error('Error fetching TrackMate XML:', err);
+        });
 });

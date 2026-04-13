@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class UltrackConnector {
@@ -187,7 +188,16 @@ public abstract class UltrackConnector {
         // wait off to a daemon background thread instead.
         Thread connectThread = new Thread(() -> {
             try {
-                latch.await();
+                boolean connected = latch.await(30, TimeUnit.SECONDS);
+                if (!connected) {
+                    // onError was never called (timeout), or onOpen never fired.
+                    onExecutionError("Timed out waiting for WebSocket connection.");
+                    return;
+                }
+                if (!c.isOpen()) {
+                    // onError already surfaced the failure via onErrorConsumer.
+                    return;
+                }
                 System.out.println(message);
                 c.send(message);
             } catch (InterruptedException e) {
